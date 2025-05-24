@@ -4,7 +4,7 @@ description: This article explains the permission requirements of 365TUNE.
 
 # Permission Requirements
 
-365TUNE is a secure and powerful reporting tool designed to assist IT administrators, IT leaders, and finance teams in gaining valuable insights into license usage, generating financial reports, and ensuring security compliance. To securely access the necessary data, 365TUNE requires specific permissions, which are granted through a one-time setup process by a Microsoft 365 Global Administrator.&#x20;
+365TUNE is a secure and powerful reporting tool designed to assist IT administrators, IT leaders, and finance teams in gaining valuable insights into license usage, generating financial reports, and ensuring security compliance. To securely access the necessary data, 365TUNE requires specific permissions, which are granted through a one-time setup process by a Microsoft 365 Global Administrator.
 
 ## 1. Role of the Global Administrator
 
@@ -15,7 +15,7 @@ To begin using 365TUNE, a Global Administrator must log into the Microsoft 365 A
 The permissions requested by 365TUNE are minimal, and the Global Admin will only approve the access necessary for the application to work. After this one-time consent, 365TUNE can function with the permissions granted, without requiring further involvement from the Global Admin.
 
 {% hint style="success" %}
-Global Admin will login only one-time into Microsoft portal for the registration process. 365TUNE does **not** access, store or retain Global Administrator credentials
+Global Admin will login only one-time into Microsoft portal for the Entra ID App registration process. 365TUNE does **not** access, store or retain Global Administrator credentials
 {% endhint %}
 
 ## 2. Permissions for Data Access
@@ -50,7 +50,7 @@ This process ensures that only authorized applications have access to your Micro
 
 ## 5. Ongoing Management and Data Security
 
-Once the setup is complete, 365TUNE can run independently, using the permissions granted during the initial setup. It does not require additional admin involvement unless changes are needed.&#x20;
+Once the setup is complete, 365TUNE can run independently, using the permissions granted during the initial setup. It does not require additional admin involvement unless changes are needed.
 
 {% hint style="success" %}
 Administrators can review, modify, or revoke 365TUNE’s permissions at any time through the Microsoft 365 Admin Center.
