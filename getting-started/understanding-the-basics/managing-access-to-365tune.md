@@ -38,7 +38,7 @@ Only a **Global Administrator** can perform this task.
 5. **Assign a Role**
    * Choose the appropriate **app role** for the user:
      * **All Reports User** – Full read-only access to all reports.
-     * **Finance Reports** – Access only to financial/license cost reports.
+     * **Finance User** – Access only to financial/license cost reports.
      * **IT User** – Access to all reports **except** financial reports.
    * Click **“Assign”**.
 6. **Save and Confirm**
@@ -52,7 +52,7 @@ Only a **Global Administrator** can perform this task.
 | Role Name            | Access Scope                               | Editable Config?  | Use Case                                      |
 | -------------------- | ------------------------------------------ | ----------------- | --------------------------------------------- |
 | **All Reports User** | ✅ All reports                              | ❌ No – Read-only  | Senior IT and Finance leadership              |
-| **Finance Reports**  | ✅ Financial reports only                   | ❌ No  – Read-only | Finance team members                          |
+| **Finance User**     | ✅ Financial reports only                   | ❌ No  – Read-only | Finance team members                          |
 | **IT User**          | ✅ All reports **except** financial reports | ❌ No – Read-only  | System admins, helpdesk, infrastructure teams |
 
 ***
