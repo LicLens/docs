@@ -14,10 +14,10 @@ Learn how to securely manage user access to the 365TUNE app using Microsoft Entr
 
 #### 🛡️ Who Can Access 365Tune?
 
-| User Type                           | Access                                                       | Notes |
-| ----------------------------------- | ------------------------------------------------------------ | ----- |
-| **Global Administrators**           | ✅ Full access by default once consent is granted             |       |
-| **Finance Users, IT Staff, Others** | ❌ Must be manually assigned a role by a Global Administrator |       |
+| User Type                           | Access                                                       |
+| ----------------------------------- | ------------------------------------------------------------ |
+| **Global Administrators**           | ✅ Full access by default once consent is granted             |
+| **Finance Users, IT Staff, Others** | ❌ Must be manually assigned a role by a Global Administrator |
 
 ***
 
