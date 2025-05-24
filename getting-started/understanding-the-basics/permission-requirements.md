@@ -8,11 +8,11 @@ description: This article explains the permission requirements of 365TUNE.
 
 ## 1. Role of the Global Administrator
 
-365TUNE relies on secure, Microsoft-managed authentication to establish a connection with your Microsoft 365 environment. During the onboarding, the app seamlessly connects to the Microsoft 365 environment using the Enterprise Application registration process in Azure Active Directory.
+365TUNE relies on secure, Microsoft-managed authentication to establish a connection with your Microsoft 365 environment. During the onboarding, the app seamlessly connects to the Microsoft 365 environment using the Enterprise Application registration process in Entra ID (Azure Active Directory).
 
 To begin using 365TUNE, a Global Administrator must log into the Microsoft 365 Admin Portal and **grant** **consent** for 365TUNE to access certain Microsoft 365 data required for reporting purposes. This is a one-time process, and it is the only time Global Admin credentials are needed.
 
-The permissions requested by 365TUNE are minimal, and the Global Admin will only approve the access necessary for the application to work. After this one-time consent, 365TUNE can function with the permissions granted, without requiring further involvement from the Global Admin.
+365TUNE applies least required permissions principle, and the Global Admin will only approve the access necessary for the application to work. After this one-time consent, 365TUNE can function with the permissions granted via Microsoft's secure APIs, without requiring further involvement from the Global Admin.
 
 {% hint style="success" %}
 Global Admin will login only one-time into Microsoft portal for the Entra ID App registration process. 365TUNE does **not** access, store or retain Global Administrator credentials
