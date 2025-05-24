@@ -7,12 +7,12 @@ description: >-
 # Update Custom Attributes
 
 {% hint style="info" %}
-This article explains how to map your existing Extention Attributes from Active Directory in to the LICLENS reports. If you do not use Extention Attributes in AD and want to know how to incorporate certain attributes such as Cost Code or Project ID in to the reports, [read this](upload-custom-attributes.md).
+This article explains how to map your existing Extention Attributes from Active Directory in to the 365TUNE reports. If you do not use Extention Attributes in AD and want to know how to incorporate certain attributes such as Cost Code or Project ID in to the reports, [read this](upload-custom-attributes.md).
 {% endhint %}
 
 Organizations often utilize custom attributes in Active Directory or Microsoft Entra ID to store specific information that is not available by default. Examples of such attributes include an employee's **Cost Code**, **Project ID**, or **Department Code**, which are essential for accurate financial reporting and compliance.
 
-LICLENS enhances reporting capabilities by allowing administrators to fetch and include these custom attributes in its Microsoft 365 reports. This feature provides a streamlined way to align license usage with financial metrics or organizational hierarchies.
+365TUNE enhances reporting capabilities by allowing administrators to fetch and include these custom attributes in its Microsoft 365 reports. This feature provides a streamlined way to align license usage with financial metrics or organizational hierarchies.
 
 ## Why is this feature important?
 
@@ -21,7 +21,7 @@ LICLENS enhances reporting capabilities by allowing administrators to fetch and 
 
 ## How to add Custom attributes ?
 
-LICLENS provides the flexibility for the users to use **Custom Attributes** from their Active directory in to the reports in the platform . This can be done either during the **onboarding process** or later through the **Settings** section under **`Onboarding > Custom Attributes`**
+365TUNE provides the flexibility for the users to use **Custom Attributes** from their Active directory in to the reports in the platform . This can be done either during the **onboarding process** or later through the **Settings** section under **`Onboarding > Custom Attributes`**
 
 <figure><img src="../../.gitbook/assets/image (2).png" alt="" width="563"><figcaption></figcaption></figure>
 
@@ -35,4 +35,4 @@ LICLENS provides the flexibility for the users to use **Custom Attributes** from
 
 <figure><img src="../../.gitbook/assets/image (4).png" alt="" width="563"><figcaption></figcaption></figure>
 
-By utilizing the custom attributes feature, LICLENS empowers organizations to gain deeper insights into their license usage and optimize financial and operational reporting processes. For further assistance, **Contact Support**.
+By utilizing the custom attributes feature, 365TUNE empowers organizations to gain deeper insights into their license usage and optimize financial and operational reporting processes. For further assistance, **Contact Support**.

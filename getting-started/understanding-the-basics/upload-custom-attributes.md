@@ -29,7 +29,7 @@ The mapping file is a CSV file containing the unique user identifier (such as `U
 `john.doe@company.com,CC101,ABC123`\
 `jane.smith@company.com,CC102,XYZ987`
 
-[Download a Sample CSV File](https://liclens.com/downloads/samples/attributes_mapping.csv)
+[Download a Sample CSV File](https://365TUNE.com/downloads/samples/attributes_mapping.csv)
 
 ## How to upload the Mapping file?
 
@@ -43,4 +43,4 @@ Go to the **Mapping File Upload** section and select your prepared CSV file. The
 
 <figure><img src="../../.gitbook/assets/image (4).png" alt="" width="563"><figcaption></figcaption></figure>
 
-By utilizing the custom attributes feature, LICLENS empowers organizations to gain deeper insights into their license usage and optimize financial and operational reporting processes. For further assistance, **Contact Support**.
+By utilizing the custom attributes feature, 365TUNE empowers organizations to gain deeper insights into their license usage and optimize financial and operational reporting processes. For further assistance, **Contact Support**.
