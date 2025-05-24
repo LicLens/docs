@@ -10,6 +10,7 @@
   * [Updating License Cost](getting-started/understanding-the-basics/updating-license-cost.md)
   * [Update Custom Attributes](getting-started/understanding-the-basics/update-custom-attributes.md)
   * [Upload Custom Attributes](getting-started/understanding-the-basics/upload-custom-attributes.md)
+  * [Managing Access to 365TUNE](getting-started/understanding-the-basics/managing-access-to-365tune.md)
 
 ## DASHBOARDS
 
