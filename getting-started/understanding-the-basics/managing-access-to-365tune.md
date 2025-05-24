@@ -72,5 +72,3 @@ In such cases, the user must **reach out to a Global Administrator** and request
 If you're unsure which role to assign or encounter issues, contact the 365Tune support team at [support@365tune.com](mailto:support@365tune.com).
 
 ***
-
-Would you like a PDF version of this document or have it styled for your web Help Center?
