@@ -11,7 +11,7 @@ To make the concealed data visible, follow these steps:
 1. **Log in to Microsoft 365 Admin Center** using an account with **Global Admin** or **Reports Administrator** privileges.
 2. Go to **Settings** > **Org Settings**.
 3. Find the **Reports** section and look for the option called **“Display concealed user, group, and site names in all reports.”**
-4. **Tick this option** to allow concealed data to be shown in all usage reports across 365TUNE reports.
+4. **Untick this option** to allow concealed data to be shown in all usage reports across 365TUNE reports.
 5. **Save your changes**.
 
 <figure><img src="../../.gitbook/assets/2024-11-15 05_14_43-Settings - Microsoft 365 admin center and 3 more pages - [InPrivate] - Microsoft.png" alt=""><figcaption></figcaption></figure>
