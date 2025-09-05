@@ -46,3 +46,7 @@ Billing is based on the **total purchased Microsoft 365 licenses** in your tenan
 * **Upgrades:** Apply immediately. You get access to the new features right away, and the remaining month/year is billed immediately at the new rate on prorated basis.
 * **Downgrades:** Apply starting from the next billing cycle (no partial refunds).
 * **Additional Agents:** Can be added anytime and the remaining month/year is billed immediately at the new rate on prorated basis.
+
+### Policy Updates
+
+This billing policy may be updated. Material changes will be communicated at least **30 days in advance**. Continued use of the service indicates acceptance of updated terms.
