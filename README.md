@@ -2,20 +2,6 @@
 icon: hand-wave
 cover: .gitbook/assets/2024-11-15 22_35_59-Dashboard for thomas – Figma.png
 coverY: 46.33600000000001
-layout:
-  cover:
-    visible: true
-    size: hero
-  title:
-    visible: true
-  description:
-    visible: false
-  tableOfContents:
-    visible: true
-  outline:
-    visible: true
-  pagination:
-    visible: true
 ---
 
 # Welcome
