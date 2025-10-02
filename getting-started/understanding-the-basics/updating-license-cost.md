@@ -11,8 +11,6 @@ description: >-
 
 However, the platform provides flexibility by allowing users to **update these costs** with their actual or negotiated license prices. This can be done either during the **onboarding process** or later through the **Settings** section under **`Onboarding > License Cost`**.
 
-<figure><img src="../../.gitbook/assets/image.png" alt=""><figcaption><p>Enter the actual costs of each license in 'Update cost' fields</p></figcaption></figure>
-
 To make the process seamless, 365TUNE offers an **intuitive user interface** that simplifies the entry of license cost details. The UI allows administrators to easily enter or modify the license cost data for each detected license. This ensures that your financial reports are based on up-to-date and accurate cost information, which is key to understanding your organization’s license expenditures and optimizing costs.
 
 The license cost data entered by users in 365TUNE is stored securely and used exclusively for the purpose of generating accurate financial reports. 365TUNE takes data security seriously, ensuring that all information entered is kept safe and confidential. The platform does not share this data with any third parties or unauthorized entities.
