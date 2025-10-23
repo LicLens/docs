@@ -14,16 +14,16 @@ description: >-
 During the initial onboarding of 365TUNE, a Microsoft Entra ID Global Administrator must grant consent to the application. This consent process:
 
 1. Establishes the connection between your Entra ID tenant and 365TUNE
-2. The **person who initially signs up** for the application becomes the **Default Administrator** in 365TUNE
+2. The **person who initially Grant Consent (the global administrator)** for the application becomes the **Default Administrator** in 365TUNE
 3. This Default Administrator receives full administrative privileges within the platform
 
 The key distinction is that:
 
-* The **Global Administrator** grants the necessary permissions/consent for the application to integrate with the tenant
-* The **person who signs up first** (which could be the same Global Admin or a different user) becomes the Default Administrator in 365TUNE
+* The **Global Administrator** grants the necessary permissions/consent for the application to integrate with the tenant, and becomes the Default Administrator in 365TUNE
+* The **person who signs up first** (which could be the same Global Admin or a different user), needs to be invited to the platform by the Default administrator after the initial onboarding.
 
 {% hint style="info" %}
-The Default Administrator has complete control over the 365TUNE platform and is responsible for Appointing additional administrators as needed. Global Administrators will not have access to the platform by default.
+The Default Administrator has complete control over the 365TUNE platform and is responsible for Appointing additional administrators as needed. Global Administrators (except the one granted permissions) will not have access to the platform by default.
 {% endhint %}
 
 ### Step-by-Step: How to Grant Access to a User
