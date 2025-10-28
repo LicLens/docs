@@ -6,7 +6,7 @@ description: This guide explains how billing and payments work for the 365tune.
 
 ### Plans & Pricing
 
-We offer three subscription options depending on your needs:
+We offer two subscription options depending on your needs:
 
 <table><thead><tr><th>Plan</th><th width="131">Monthly Fee</th><th width="142">Users Included</th><th>Extra Users</th><th width="171">Reporting Agents</th><th>Data Retention</th><th>Support</th></tr></thead><tbody><tr><td><strong>Standard</strong></td><td>$99</td><td>300</td><td>$0.02/user</td><td>5 (add $10/agent)</td><td>12 months</td><td>Email &#x26; Chat (business hrs)</td></tr><tr><td><strong>Enterprise</strong></td><td>$99</td><td>300</td><td>$0.05/user</td><td>10 (add $10/agent)</td><td>36 months</td><td>Priority SLA</td></tr></tbody></table>
 
