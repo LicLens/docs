@@ -32,8 +32,5 @@
 * [GDAP Support Articles](msp/gdap-support-articles/README.md)
   * [What Is GDAP? How Does It Work?](msp/gdap-support-articles/what-is-gdap-how-does-it-work.md)
   * [How 365TUNE Uses GDAP for Access Control](msp/gdap-support-articles/how-365tune-uses-gdap-for-access-control.md)
+  * [Why 365TUNE Requires Application Registration in Customer Tenants](msp/gdap-support-articles/why-365tune-requires-application-registration-in-customer-tenants.md)
   * [GDAP Troubleshooting: Why Can't I See a Customer Tenant?](msp/gdap-support-articles/gdap-troubleshooting-why-cant-i-see-a-customer-tenant.md)
-
-***
-
-* [Why 365tune Requires Application Registration in Customer Tenants](why-365tune-requires-application-registration-in-customer-tenants.md)
