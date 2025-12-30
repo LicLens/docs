@@ -29,6 +29,7 @@
 
 ## Managed Service Providers <a href="#msp" id="msp"></a>
 
-* [What Is GDAP? How Does It Work?](msp/what-is-gdap-how-does-it-work.md)
-* [How 365TUNE Uses GDAP for Access Control](msp/how-365tune-uses-gdap-for-access-control.md)
-* [GDAP Troubleshooting: Why Can't I See a Customer Tenant?](msp/gdap-troubleshooting-why-cant-i-see-a-customer-tenant.md)
+* [GDAP Support Articles](msp/gdap-support-articles/README.md)
+  * [What Is GDAP? How Does It Work?](msp/gdap-support-articles/what-is-gdap-how-does-it-work.md)
+  * [How 365TUNE Uses GDAP for Access Control](msp/gdap-support-articles/how-365tune-uses-gdap-for-access-control.md)
+  * [GDAP Troubleshooting: Why Can't I See a Customer Tenant?](msp/gdap-support-articles/gdap-troubleshooting-why-cant-i-see-a-customer-tenant.md)
