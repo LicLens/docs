@@ -26,3 +26,9 @@
 * [Limitations](known-problems/limitations.md)
 * [Troubleshooting](known-problems/troubleshooting/README.md)
   * [FIX: Report fields displaying random values](known-problems/troubleshooting/fix-report-fields-displaying-random-values.md)
+
+## Managed Service Providers <a href="#msp" id="msp"></a>
+
+* [What Is GDAP? How Does It Work?](msp/what-is-gdap-how-does-it-work.md)
+* [How 365TUNE Uses GDAP for Access Control](msp/how-365tune-uses-gdap-for-access-control.md)
+* [GDAP Troubleshooting: Why Can't I See a Customer Tenant?](msp/gdap-troubleshooting-why-cant-i-see-a-customer-tenant.md)
