@@ -30,7 +30,7 @@ Here's what makes this approach secure for your organization:
 
 ### Why This Protects Your Organization
 
-While granting application access might seem like giving away control, this model actually provides several important security benefits for your organization:
+Granting application access is not only an easy step, this model actually provides several important security benefits for your organization:
 
 #### 1. You Maintain Explicit Control
 
