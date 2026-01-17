@@ -69,9 +69,18 @@ If your organization needs **management capabilities** (license assignment, user
 
 ### After Granting Consent
 
-* **You become the default administrator** for 365TUNE
-* You must invite other users (including the person who requested consent)
+* **The admin who granted the consent become the default administrator** for 365TUNE
+* This Admin must invite other users (including the person who requested consent) and assign roles.
 * Data collection begins immediately
+
+### **Revoke access**&#x20;
+
+You can remove 365TUNE's access at any time:
+
+1. Navigate to **Enterprise Applications** in Azure AD
+2. Find "365TUNE"
+3. Click **Delete** or **Remove**
+4. Access is revoked immediately
 
 ### Common Questions
 
@@ -81,7 +90,7 @@ If you deny the consent request or ignore the email, 365TUNE will not be able to
 
 **Can I grant partial permissions?**
 
-No. The consent process is all-or-nothing for each consent request - you either grant all requested permissions or deny the entire request. You cannot selectively approve individual permissions. However, you can grant read-only consent without granting management consent.
+No. You cannot selectively approve individual permissions. 365TUNE follows the principle of least privilege - requesting only the minimum permissions necessary to function. 365TUNE manages permission consent for reporting/monitoring and management feature separately. This means least required permissions are requested separately based on the organizations need.
 
 **How long does my consent remain valid?**
 
