@@ -35,3 +35,4 @@
   * [Why 365TUNE Requires Application Registration in Customer Tenants](msp/gdap-support-articles/why-365tune-requires-application-registration-in-customer-tenants.md)
   * [GDAP Troubleshooting: Why Can't I See a Customer Tenant?](msp/gdap-support-articles/gdap-troubleshooting-why-cant-i-see-a-customer-tenant.md)
   * [Understanding the 365TUNE Application Registration Request from Your MSP](msp/gdap-support-articles/understanding-the-365tune-application-registration-request-from-your-msp.md)
+* [Understanding the Admin Consent Request](msp/understanding-the-admin-consent-request.md)
