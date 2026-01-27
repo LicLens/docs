@@ -6,7 +6,7 @@ description: >-
 
 # Permissions Explained
 
-365TUNE collects data from Microsoft 365 exclusively through the **Microsoft Graph API**, which provides secure and streamlined access to a wide range of Microsoft 365 services.&#x20;
+365TUNE collects data from Microsoft 365 exclusively through the **Microsoft Graph API**, which provides secure and streamlined access to a wide range of Microsoft 365 services.
 
 ## 1. **Application Registration and Permissions**
 
@@ -16,9 +16,21 @@ description: >-
 
 Below are the detailed breakdown of permissions requested during the onboarding/app registration process.
 
-**Microsoft Graph Permissions:**
+### **Microsoft Graph Permissions:**
 
-<table><thead><tr><th width="197">Permission Names</th><th width="160.33333333333331">Permission Type</th><th>Description</th></tr></thead><tbody><tr><td>AuditLog.Read.All</td><td>Application</td><td>Read audit log data from Microsoft 365</td></tr><tr><td>Directory.Read.All</td><td>Application</td><td>Read directory data Entra ID. Example: Get assigned licenses details of a user</td></tr><tr><td>Mail.ReadBasic</td><td>Application</td><td>Read basic mail in all mailboxes. This does not grand access to email contents.</td></tr><tr><td>Reports.Read.All</td><td>Application</td><td>Read usage reports from Microsoft 365</td></tr><tr><td>User.Read.All</td><td>Application</td><td>Read users' profiles to fetch details. Example: Cost Center</td></tr><tr><td>UserAuthenticationMethod.Read.All</td><td>Application</td><td>Read users' authentication methods. </td></tr></tbody></table>
+Application Permissions (Read-Only)
+
+| Permission                              | Description                                       | What 365tune Uses It For                                                                                                                     |
+| --------------------------------------- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **DelegatedAdminRelationship.Read.All** | Read Delegated Admin relationships with customers | Automatically discovers which tenants you manage via GDAP and syncs user access based on existing security group mappings.                   |
+| **Directory.Read.All**                  | Read directory data                               | Accesses user accounts, groups, organizational units, and directory structure to inventory users across managed tenants.                     |
+| **User.Read.All**                       | Read all users' full profiles                     | Retrieves user properties including department, job title, manager, office location, and license assignments for reporting and optimization. |
+| **AuditLog.Read.All**                   | Read all audit log data                           | Accesses audit logs for sign-ins, file access, mailbox activity, and admin actions to track activity and detect inactive users.              |
+| **Reports.Read.All**                    | Read all usage reports                            | Retrieves Microsoft 365 usage statistics, application usage data, and adoption metrics for usage analysis.                                   |
+| **MailboxSettings.Read**                | Read all user mailbox settings                    | Reads mailbox settings such as forwarding rules, automatic replies, and time zone settings. Can't read emails.                               |
+| **SharePointTenantSettings.Read.All**   | Read SharePoint and OneDrive tenant settings      | Accesses tenant-level SharePoint/OneDrive settings including sharing policies, storage limits, and site creation permissions.                |
+| **Application.Read.All**                | Read all applications                             | Lists registered applications and their permissions for security auditing and identifying apps with excessive permissions.                   |
+| **ReportSettings.Read.All**             | Read all admin report settings                    | Accesses tenant report settings including privacy settings and report customization options.                                                 |
 
 ## 2. **Using Microsoft Graph API**
 
