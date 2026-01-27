@@ -1,3 +1,10 @@
+---
+description: >-
+  This article provides a detailed breakdown of the specific Microsoft Entra ID
+  permissions that 365TUNE requires to perform management actions within you
+  tenant.
+---
+
 # Management and Automation: Permissions Explained
 
 ### Overview
@@ -120,3 +127,5 @@ This permission allows 365tune to read user account information.
 * View account status (accountEnabled property)
 * Verify changes after updates
 * Display user information in the 365tune interface
+
+If you’re setting up 365TUNE for the first time or reviewing your security posture, ensure that the required permissions are granted and aligned with your organization’s governance policies — this will help you unlock powerful automation and user management efficiencies across your tenants with confidence.
