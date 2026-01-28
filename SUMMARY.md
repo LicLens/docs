@@ -12,12 +12,17 @@
   * [Upload Custom Attributes](getting-started/understanding-the-basics/upload-custom-attributes.md)
   * [Managing Access to 365TUNE](getting-started/understanding-the-basics/managing-access-to-365tune.md)
   * [Quick Reference: Billing & Payment](getting-started/understanding-the-basics/quick-reference-billing-and-payment.md)
-  * [Management and Automation: Permissions Explained](getting-started/understanding-the-basics/management-and-automation-permissions-explained.md)
-  * [Security and Compliance: Permissions Explained](getting-started/understanding-the-basics/security-and-compliance-permissions-explained.md)
+* [Security and Compliance](getting-started/security-and-compliance/README.md)
+  * [Security and Compliance: Permissions Explained](getting-started/security-and-compliance/security-and-compliance-permissions-explained.md)
+  * [Understanding Security and Compliance](getting-started/security-and-compliance/understanding-security-and-compliance.md)
+  * [CIS Microsoft 365 Foundations Benchmark](getting-started/security-and-compliance/cis-microsoft-365-foundations-benchmark.md)
+* [Management and Automation](getting-started/management-and-automation/README.md)
+  * [Management and Automation: Permissions Explained](getting-started/management-and-automation/management-and-automation-permissions-explained.md)
 
 ## DASHBOARDS
 
 * [Financials](dashboards/financials.md)
+* [Security & Compliance](dashboards/security-and-compliance.md)
 
 ## REPORTS
 
