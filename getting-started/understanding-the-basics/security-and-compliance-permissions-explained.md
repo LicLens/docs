@@ -9,7 +9,7 @@ description: >-
 **All permissions are read-only.** 365TUNE collects security and compliance data for reporting and analysis. No modifications are made to security policies, device configurations, or identity settings.
 
 {% hint style="info" %}
-Analysis capabilities depend on tenant licensing. Controls requiring unavailable licenses (e.g., PIM requires Entra ID P2) are automatically skipped.
+Permission use and analysis capabilities depend on tenant licensing. Controls requiring unavailable licenses (e.g., PIM requires Entra ID P2) are automatically skipped.
 {% endhint %}
 
 ### Required Permissions
