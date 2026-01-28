@@ -1,6 +1,6 @@
 # CIS Microsoft 365 Foundations Benchmark
 
-25+ automated prescriptive security controls across nine service areas. 365TUNE automatically scans \~25 automated controls. Industry-standard framework recognized by auditors globally.
+365TUNE automatically scans \~25 automated controls. Industry-standard framework recognized by auditors globally.
 
 ### Control Sections
 
