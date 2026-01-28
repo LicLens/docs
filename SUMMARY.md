@@ -13,6 +13,7 @@
   * [Managing Access to 365TUNE](getting-started/understanding-the-basics/managing-access-to-365tune.md)
   * [Quick Reference: Billing & Payment](getting-started/understanding-the-basics/quick-reference-billing-and-payment.md)
   * [Management and Automation: Permissions Explained](getting-started/understanding-the-basics/management-and-automation-permissions-explained.md)
+  * [Security and Compliance: Permissions Explained](getting-started/understanding-the-basics/security-and-compliance-permissions-explained.md)
 
 ## DASHBOARDS
 
