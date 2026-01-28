@@ -13,31 +13,26 @@ The **Management and Automation** module in 365tune enables to take action on us
 
 This article explains the specific permissions required for the Management and Automation module, why they're needed, and how 365TUNE implements them securely.
 
+{% hint style="info" %}
+**Current Limitation**: Synchronized users (hybrid identity) cannot be modified due to on-premises Active Directory source of authority constraints. Hybrid AD support is in the roadmap and will be available in the platform by mid 2026.
+{% endhint %}
+
 ### Required Permissions
 
-The Management and Automation module requires six delegated permissions:
+All permissions are **application type** with tenant-wide scope.
 
-| Permission                           | Type      | Purpose                                                          |
-| ------------------------------------ | --------- | ---------------------------------------------------------------- |
-| `User.EnableDisableAccount.All`      | Delegated | Enable or disable user accounts                                  |
-| `User-Phone.ReadWrite.All`           | Delegated | Modify phone numbers (businessPhones, mobilePhone)               |
-| `User.ReadWrite.All`                 | Delegated | Modify user properties (displayName, jobTitle, department, etc.) |
-| `User-PasswordProfile.ReadWrite.All` | Delegated | Reset user passwords                                             |
-| `LicenseAssignment.ReadWrite.All`    | Delegated | Assign and remove licenses                                       |
-| `User.Read.All`                      | Delegated | Read user account details                                        |
-
-#### Why Delegated Permissions?
-
-365TUNE uses **delegated permissions** for all management operations, which means:
-
-**Every action is performed in the context of a logged-in admin**\
-Your technician's identity is used when making changes, creating a complete audit trail in Microsoft's logs.
-
-**Better security posture**\
-Unlike application permissions that work 24/7 in the background, delegated permissions only work when someone is actively logged in.
-
-**Full accountability**\
-Entra ID audit logs show exactly which person made each change, not just "365tune application made a change."
+| Permission                         | Purpose                                        |
+| ---------------------------------- | ---------------------------------------------- |
+| User.ReadWrite.All                 | Modify user properties                         |
+| User.EnableDisableAccount.All      | Enable/disable accounts                        |
+| User-Phone.ReadWrite.All           | Update phone numbers                           |
+| User-Mail.ReadWrite.All            | Modify otherMails property. Can't read emails. |
+| User-PasswordProfile.ReadWrite.All | Reset passwords                                |
+| User.DeleteRestore.All             | Delete/restore users                           |
+| User.Read.All                      | Read user properties                           |
+| LicenseAssignment.ReadWrite.All    | Manage license assignments                     |
+| GroupMember.ReadWrite.All          | Manage group membership                        |
+| Group.ReadWrite.All                | Modify group properties                        |
 
 ***
 
@@ -127,5 +122,19 @@ This permission allows 365tune to read user account information.
 * View account status (accountEnabled property)
 * Verify changes after updates
 * Display user information in the 365tune interface
+
+### Frequently Asked Questions
+
+**Q: Can 365TUNE access email or files?** A: No. Mail and file permissions are not requested.
+
+**Q: Can 365TUNE assign Global Administrator?** A: No. RoleManagement.ReadWrite.Directory is not requested.
+
+**Q: Why so many permissions?** A: Microsoft's granular permission model (2024) requires separate permissions for specific operations. This provides better audit trails and least-privilege access.
+
+**Q: What happens to synchronized user management?** A: Properties controlled by on-premises AD cannot be modified. License assignment and usage location management remain functional.
+
+**Q: How do application permissions differ from delegated?** A: Application permissions operate with service principal identity without requiring logged-in users. Delegated permissions inherit user access levels and require user sessions.
+
+**Q: What if password writeback isn't enabled?** A: Password resets work for cloud-only users. For synchronized users, password changes affect cloud services only without writeback configuration.
 
 If you’re setting up 365TUNE for the first time or reviewing your security posture, ensure that the required permissions are granted and aligned with your organization’s governance policies.
