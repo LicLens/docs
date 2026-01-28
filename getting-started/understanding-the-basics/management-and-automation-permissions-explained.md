@@ -129,7 +129,7 @@ This permission allows 365tune to read user account information.
 
 **Q: Can 365TUNE assign Global Administrator?** A: No. RoleManagement.ReadWrite.Directory is not requested.
 
-**Q: Why so many permissions?** A: Microsoft's granular permission model (2024) requires separate permissions for specific operations. This provides better audit trails and least-privilege access.
+**Q: Why so many permissions?** A: Microsoft's granular permission model requires separate permissions for specific operations. This provides better audit trails and least-privilege access.
 
 **Q: What happens to synchronized user management?** A: Properties controlled by on-premises AD cannot be modified. License assignment and usage location management remain functional.
 
