@@ -9,7 +9,7 @@ description: >-
 
 ### Overview
 
-The **Management and Automation** module in 365tune enables to take action on user accounts across their managed tenants. Unlike the read-only Reporting and Auditing module, this module allows you to modify user properties, reset passwords, and assign licenses directly from 365TUNE's interface.
+The **Management and Automation** module in 365TUNE enables to take action on user accounts across their managed tenants. Unlike the read-only Reporting and Auditing module, this module allows you to modify user properties, reset passwords, and assign licenses directly from 365TUNE's interface.
 
 This article explains the specific permissions required for the Management and Automation module, why they're needed, and how 365TUNE implements them securely.
 
@@ -63,7 +63,7 @@ This permission allows 365tune to modify phone number properties on user account
 
 #### `User.ReadWrite.All`
 
-This permission allows 365tune to modify standard user properties.
+This permission allows 365TUNE to modify standard user properties.
 
 **What you can do:**
 
@@ -87,7 +87,7 @@ This permission allows 365tune to modify standard user properties.
 
 #### `User-PasswordProfile.ReadWrite.All`
 
-This permission allows 365tune to reset passwords for user accounts.
+This permission allows 365TUNE to reset passwords for user accounts.
 
 **What you can do:**
 
@@ -100,7 +100,7 @@ This permission allows 365tune to reset passwords for user accounts.
 
 #### `LicenseAssignment.ReadWrite.All`
 
-This permission allows 365tune to assign and remove licenses for users and groups.
+This permission allows 365TUNE to assign and remove licenses for users and groups.
 
 **What you can do:**
 
@@ -114,7 +114,7 @@ This permission allows 365tune to assign and remove licenses for users and group
 
 #### `User.Read.All`
 
-This permission allows 365tune to read user account information.
+This permission allows 365TUNE to read user account information.
 
 **What you can do:**
 
