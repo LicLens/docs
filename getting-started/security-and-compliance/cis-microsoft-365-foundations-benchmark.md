@@ -125,12 +125,6 @@ Read-only:
 * Exchange/SharePoint/Teams: View-only
 * Power BI: Administrator (read-only)
 
-### Implementation Limitations
-
-**Current State:**
-
-* \~25 automated controls implemented
-
 ### Reference
 
 * [CIS Microsoft 365 Benchmark](https://www.cisecurity.org/benchmark/microsoft_365)
