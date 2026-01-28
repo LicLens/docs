@@ -16,6 +16,7 @@
   * [Security and Compliance: Permissions Explained](getting-started/security-and-compliance/security-and-compliance-permissions-explained.md)
   * [Understanding Security and Compliance](getting-started/security-and-compliance/understanding-security-and-compliance.md)
   * [CIS Microsoft 365 Foundations Benchmark](getting-started/security-and-compliance/cis-microsoft-365-foundations-benchmark.md)
+  * [CISA Secure Cloud Business Applications](getting-started/security-and-compliance/cisa-secure-cloud-business-applications.md)
 * [Management and Automation](getting-started/management-and-automation/README.md)
   * [Management and Automation: Permissions Explained](getting-started/management-and-automation/management-and-automation-permissions-explained.md)
 
