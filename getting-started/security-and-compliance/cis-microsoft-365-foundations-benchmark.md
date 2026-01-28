@@ -1,6 +1,6 @@
 # CIS Microsoft 365 Foundations Benchmark
 
-365TUNE automatically scans \~25 automated controls. Industry-standard framework recognized by auditors globally.
+Under CIS Microsoft 365 Foundations Benchmark, 365TUNE automatically scans \~25 automated controls. Industry-standard framework recognized by auditors globally. CIS Microsoft 365 Foundations Benchmark is one of the 4 four frameworks 365TUNE supports.
 
 ### Control Sections
 
