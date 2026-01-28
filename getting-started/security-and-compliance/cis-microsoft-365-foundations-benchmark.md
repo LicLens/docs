@@ -1,19 +1,19 @@
 # CIS Microsoft 365 Foundations Benchmark
 
-140 prescriptive security controls across nine Microsoft 365 service areas. 365TUNE automatically scans all automated controls without configuration required. Industry-standard framework recognized by auditors globally.
+25+ automated prescriptive security controls across nine service areas. 365TUNE automatically scans \~25 automated controls. Industry-standard framework recognized by auditors globally.
 
 ### Control Sections
 
-#### Section 1: Microsoft 365 Admin Center (\~15 controls)
+#### Section 1: Admin Center (\~15 controls)
 
-* Administrative account separation
-* Shared mailbox sign-in blocking
-* Modern authentication enforcement
-* Audit log search enabled
-* Public group management
-* Customer lockbox
+* Administrative account separation (L1, E3)
+* Shared mailbox sign-in blocking (L1, E3)
+* Modern authentication enforcement (L1, E3)
+* Audit log search enabled (L2, E3)
+* Public group management (L1, E3)
+* Customer lockbox (L2, E3)
 
-#### Section 2: Microsoft 365 Defender (\~20 controls)
+#### Section 2: Defender (\~20 controls)
 
 * Safe Links for Office apps (L2, E5)
 * Safe Attachments (L2, E5)
@@ -22,20 +22,22 @@
 * SPF records (L1, E3)
 * DKIM signing (L1, E3)
 * DMARC enforcement (L1, E3)
+* Anti-malware notifications (L1, E3)
 
-#### Section 3: Microsoft Purview (\~15 controls)
+#### Section 3: Purview (\~15 controls)
 
-* Audit logging enabled
-* Mailbox auditing
-* Group creation restrictions
+* Audit logging enabled (L2, E5)
+* Mailbox auditing (L2, E5)
+* Group creation restrictions (L2, E5)
 
 #### Section 4: Data Management (\~15 controls)
 
 * Sensitivity labels (L2, E5)
 * DLP policies (L2, E5)
 * Safe Links for Office (L2, E5)
+* Information protection (L2, E5)
 
-#### Section 5: Microsoft Entra Admin Center (\~25 controls)
+#### Section 5: Entra Admin Center (\~25 controls)
 
 * MFA for all users (L1, E3)
 * Risk-based MFA (L2, E5)
@@ -69,12 +71,18 @@
 * Anonymous meeting join blocked (L1, E3)
 * External file sharing restricted (L2, E3)
 
-#### Section 9: Microsoft Fabric (Power BI) (\~10 controls)
+#### Section 9: Power BI (\~10 controls)
 
 * Publish to web disabled (L1, E3)
 * Workspace creation restricted (L2, E3)
 * Guest access limited (L2, E3)
 * Data export restricted (L2, E3)
+
+***
+
+### Automated vs. Manual Controls
+
+**Automated (\~25 controls):** 365TUNE executes via PowerShell and Microsoft Graph API.
 
 ### Compliance Mappings
 
@@ -90,56 +98,16 @@ Single assessment covers multiple frameworks:
 * CMMC
 * FedRAMP
 * FISMA
-* GLBA
-* SOX
-
-### Control Structure
-
-Each control includes:
-
-* ID number (e.g., 5.1.1.1)
-* Title and description
-* Level (L1/L2) and licensing (E3/E5)
-* Assessment status (Automated/Manual)
-* Rationale
-* Audit instructions
-* Remediation steps
-* Impact analysis
-* Default values
-
-### Assessment Process
-
-**Automated Controls:** 365TUNE executes via PowerShell, Microsoft Graph API, Exchange/SharePoint/Teams/Power BI management modules.
-
-### Output
-
-**Compliance Dashboard:**
-
-* Overall compliance percentage
-* Level breakdown (L1: 85%, L2: 68%)
-* Licensing breakdown (E3: 92%, E5: 71%)
-* Section scores (Admin 80%, Defender 75%, etc.)
-
-**Control Results:**
-
-* CIS control number
-* Pass/fail status
-* Configuration evidence
-* Compliance framework mappings (NIST, ISO, PCI, etc.)
-* Remediation steps with PowerShell commands
-* Impact analysis
-
-***
 
 ### Use Cases
 
-**Baseline Implementation:** Run L1 assessment, export failed controls, prioritize remediation, validate fixes.
+**Baseline Implementation:** L1 assessment, gap analysis, phased remediation, validation.
 
-**Audit Preparation:** Generate compliance reports, control mappings, configuration evidence, exception documentation.
+**Audit Preparation:** Compliance reports, control mappings, configuration evidence.
 
-**Continuous Compliance:** Weekly scans, alert on regressions, track trends, monthly executive reports.
+**Continuous Compliance:** Weekly scans, regression monitoring, trend analysis.
 
-**Multi-Framework Compliance:** Single assessment covers NIST, ISO 27001, PCI DSS with unified remediation.
+**Multi-Framework Compliance:** Single assessment for NIST, ISO 27001, PCI DSS.
 
 ***
 
@@ -156,25 +124,12 @@ Read-only:
 * DeviceManagementManagedDevices.Read.All
 * Exchange/SharePoint/Teams: View-only
 * Power BI: Administrator (read-only)
-* Intune: Read-only Operator
 
-***
+### Implementation Limitations
 
-### Licensing Requirements
+**Current State:**
 
-| Section        | Minimum          | Notes                              |
-| -------------- | ---------------- | ---------------------------------- |
-| 1 (Admin)      | M365 E3          | All controls                       |
-| 2 (Defender)   | M365 E3          | Some L2 require E5/Defender Plan 2 |
-| 3 (Purview)    | M365 E5          | Most require E5                    |
-| 4 (Data)       | M365 E5          | Advanced DLP requires E5           |
-| 5 (Entra)      | M365 E3          | Risk controls require E5/P2        |
-| 6 (SharePoint) | M365 E3          | All controls                       |
-| 7 (MDM)        | M365 E3 + Intune | Intune Plan 1 minimum              |
-| 8 (Teams)      | M365 E3          | All controls                       |
-| 9 (Power BI)   | Power BI Pro     | Some require Premium               |
-
-***
+* \~25 automated controls implemented
 
 ### Reference
 
