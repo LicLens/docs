@@ -1,8 +1,8 @@
 ---
 description: >-
-  This article documents the security and compliance analysis capabilities
-  available in 365TUNE. Four distinct frameworks provide comprehensive security
-  posture assessment for Microsoft 365 and Entra ID
+  The 365TUNE platform applies four distinct security frameworks to perform
+  structured, enterprise grade security posture assessments across Microsoft 365
+  and Microsoft Entra ID environments.
 ---
 
 # Understanding Security and Compliance
