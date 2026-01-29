@@ -7,7 +7,7 @@ description: >-
 
 # Understanding Security and Compliance
 
-365TUNE Security and Compliance Analyzer, powered by Maester, consolidates multiple security frameworks into unified automation, providing comprehensive Microsoft 365 security posture assessment through four analysis engines. &#x20;
+**365TUNE Security and Compliance Analyzer**, built on the Maester, delivers enterprise-grade security and compliance automation by unifying multiple industry-recognized security frameworks into a single, scalable assessment platform. It provides a holistic Microsoft 365 security posture evaluation through four specialized analysis engines.&#x20;
 
 With 180+ controls, each framework serves specific organizational requirements ranging from federal regulatory compliance to threat-informed security operations. Understanding the scope, coverage, and technical implementation of these frameworks enables effective security assessment strategy and compliance reporting.&#x20;
 
