@@ -58,7 +58,7 @@ When you click the consent link in the email, you'll see the specific Microsoft 
 * **AuditLog.Read.All** - Read audit logs for compliance
 
 {% hint style="info" %}
-For a complete list of permissions and explanation of each permission and how 365TUNE uses it, refer to the [Permissions Explained article](../getting-started/understanding-the-basics/permissions-explained.md).
+For a complete list of permissions and explanation of each permission and how 365TUNE uses it, refer to the [Permissions Explained article](permissions-explained.md).
 {% endhint %}
 
 #### For Management Feature Access
