@@ -17,7 +17,7 @@ With 180+ controls, each framework serves specific organizational requirements r
 
 ### Available Analysis Frameworks/Benchmarks
 
-<table><thead><tr><th width="290">Framework</th><th width="126">Control Count</th><th>Primary Focus</th><th>Compliance Mapping</th></tr></thead><tbody><tr><td><a href="cis-microsoft-365-foundations-benchmark.md">CIS Microsoft 365 Benchmark</a></td><td>140</td><td>Prescriptive hardening guidance</td><td>NIST, ISO 27001, PCI DSS, HIPAA, SOC 2</td></tr><tr><td><a href="cisa-secure-cloud-business-applications.md">CISA Secure Cloud Business Applications</a></td><td>65-85</td><td>Federal security mandates</td><td>NIST 800-53, MITRE ATT&#x26;CK</td></tr><tr><td><a href="entra-id-security-config-analyzer.md">Entra ID Security Config Analyzer</a></td><td>46+</td><td>Attack-defense configuration analysis</td><td>MITRE ATT&#x26;CK</td></tr><tr><td><a href="community-recommended-controls.md">Community Recommended Controls</a></td><td>185+</td><td>Unified automation across multiple standards</td><td>CISA, CIS, EIDSCA, MITRE ATT&#x26;CK</td></tr></tbody></table>
+<table><thead><tr><th width="290">Framework</th><th width="126">Control Count</th><th>Primary Focus</th><th>Compliance Mapping</th></tr></thead><tbody><tr><td><a href="understanding-security-and-compliance.md#cis-microsoft-365-benchmark">CIS Microsoft 365 Benchmark</a></td><td>140</td><td>Prescriptive hardening guidance</td><td>NIST, ISO 27001, PCI DSS, HIPAA, SOC 2</td></tr><tr><td><a href="understanding-security-and-compliance.md#cisa-secure-cloud-business-applications">CISA Secure Cloud Business Applications</a></td><td>65-85</td><td>Federal security mandates</td><td>NIST 800-53, MITRE ATT&#x26;CK</td></tr><tr><td><a href="understanding-security-and-compliance.md#entra-id-security-config-analyzer">Entra ID Security Config Analyzer</a></td><td>46+</td><td>Attack-defense configuration analysis</td><td>MITRE ATT&#x26;CK</td></tr><tr><td><a href="understanding-security-and-compliance.md#community-recommended-controls">Community Recommended Controls</a></td><td>185+</td><td>Unified automation across multiple standards</td><td>CISA, CIS, EIDSCA, MITRE ATT&#x26;CK</td></tr></tbody></table>
 
 ### CIS Microsoft 365 Benchmark
 
@@ -33,6 +33,8 @@ Structured profiles enable risk-proportionate implementation: Level 1 for essent
 * Level 1/Level 2 profiles, E3/E5 licensing awareness
 * Comprehensive compliance mappings: NIST, ISO 27001, PCI DSS, HIPAA, SOC 2
 * Focus: Industry-standard hardening guidance
+
+[Read More](cis-microsoft-365-foundations-benchmark.md)
 
 ### CISA Secure Cloud Business Applications
 
@@ -50,6 +52,8 @@ Controls address critical security areas including legacy authentication blockin
 * NIST 800-53 and MITRE ATT\&CK mappings
 * Focus: Government-grade security validation
 
+[Read More](cisa-secure-cloud-business-applications.md)
+
 ### Entra ID Security Config Analyzer
 
 Attack-defense framework mapping 46+ security configurations to documented adversary techniques from the Microsoft Entra ID Attack and Defense Playbook. Available in 365TUNE with automatic scanning—no technical setup or coding required.&#x20;
@@ -65,6 +69,8 @@ Each control derives from offensive security research and maps to specific MITRE
 * 5 categories: Authentication, Authorization, Consent, Password, Conditional Access
 * Focus: Threat-informed identity security
 
+[Read More](entra-id-security-config-analyzer.md)
+
 ### Community Recommended Controls
 
 Driven by Maester Community, this security framework with 185+ automated tests consolidating best practices from multiple authoritative sources. Available natively in 365TUNE with automatic scanning—no scripting or coding required. Provides comprehensive coverage across Conditional Access, Privileged Identity Management, authentication methods, Exchange Online security, and Microsoft Defender configurations.&#x20;
@@ -77,3 +83,5 @@ Unique capabilities include Conditional Access What-If simulation for policy val
 * Unique capabilities: What-If analysis, stale reference detection, drift monitoring
 * Coverage: Entra ID, Exchange, Defender, SharePoint, Teams, Intune
 * Focus: Unified automation with continuous community updates
+
+[Read More](community-recommended-controls.md)
