@@ -6,27 +6,24 @@ coverY: 46.33600000000001
 
 # Welcome
 
-365TUNE is your all-in-one reporting solution for Microsoft 365 license management. From tracking usage and optimizing costs to ensuring compliance and generating financial insights, 365TUNE empowers IT leaders and finance teams to maximize value and streamline operations—all while staying secure
+365TUNE is a Microsoft 365 reporting and analysis platform for large and medium enterprises. From automated security and compliance analysis to tracking usage and optimizing costs to ensuring compliance and generating financial insights, 365TUNE empowers IT leaders, security and finance teams to maximize value and streamline operations.
 
-This platform simplifies Microsoft 365 License management by delivering powerful insights into license usage, financial performance, and security compliance—all in one secure, user-friendly platform. Empower your IT and finance teams to make smarter decisions, reduce costs, and ensure operational excellence.
+This platform simplifies Microsoft 365 management by delivering powerful insights into license usage, financial performance, and security compliance—all in one secure, user-friendly platform. Empower your IT and finance teams to make smarter decisions, reduce costs, and ensure operational excellence.
 
 Here is how 365TUNE adds value:
 
-**1. Optimize Costs:**
-
-Say goodbye to overspending and underutilization. 365TUNE provides real-time visibility into license usage, helping you reclaim budget and align costs with actual needs.
-
-**2. Streamline Financial Reporting:**
-
-365TUNE eliminates manual processes by automating detailed financial reports. Gain clarity, accuracy, and speed in tracking Microsoft 365 expenses and ROI.
-
-**3. Enhance Security and Compliance:**
-
-Protect your organization with robust tools for monitoring user access and ensuring compliance with Microsoft 365’s licensing terms and security policies.
-
-**4. Seamless Integration and Usability:**
-
-365TUNE integrates effortlessly with your existing tools, offering an intuitive interface tailored for IT administrators, IT leaders, and finance teams.
+* **Centralized Visibility**\
+  Provides unified insight into Microsoft 365 license usage, cost allocation, security posture, and compliance status across the organization.
+* **Automated Security and Compliance Analysis**\
+  Performs continuous assessments across Microsoft 365 and Entra ID using standardized security frameworks and control-based evaluations.
+* **Cost Optimization and License Governance**\
+  Identifies underutilized, over-assigned, and misconfigured licenses to support cost control and informed procurement decisions.
+* **Audit and Regulatory Readiness**\
+  Supports internal and external audits through consistent, repeatable reporting and traceable assessment results.
+* **IT and Finance Alignment**\
+  Enables shared reporting and financial transparency to align technical usage data with budgeting and chargeback requirements.
+* **Enterprise Scalability and Security**\
+  Designed to operate across large, distributed Microsoft 365 environments with secure access controls and scalable architecture.
 
 ### Jump right in
 
