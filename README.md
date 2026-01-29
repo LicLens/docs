@@ -6,7 +6,7 @@ coverY: 46.33600000000001
 
 # Welcome
 
-365TUNE is a Microsoft 365 reporting and analysis platform for large and medium enterprises. From automated security and compliance analysis to tracking usage and optimizing costs to ensuring compliance and generating financial insights, 365TUNE empowers IT leaders, security and finance teams to maximize value and streamline operations.
+365TUNE is a Microsoft 365 reporting and analysis platform for Enterprises and MSPs. From automated security and compliance analysis to tracking usage and optimizing costs to ensuring compliance and generating financial insights, 365TUNE empowers IT leaders, security and finance teams to maximize value and streamline operations.
 
 This platform simplifies Microsoft 365 management by delivering powerful insights into license usage, financial performance, and security compliance—all in one secure, user-friendly platform. Empower your IT and finance teams to make smarter decisions, reduce costs, and ensure operational excellence.
 
