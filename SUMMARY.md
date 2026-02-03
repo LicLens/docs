@@ -23,7 +23,7 @@
 * [Management and Automation](getting-started/management-and-automation/README.md)
   * [Management and Automation: Permissions Explained](getting-started/management-and-automation/management-and-automation-permissions-explained.md)
 * [365TUNE's AI Agent](getting-started/365tunes-ai-agent/README.md)
-  * [Enterprise data protection](getting-started/365tunes-ai-agent/enterprise-data-protection.md)
+  * [Enterprise Data Protection for AI Agent](getting-started/365tunes-ai-agent/enterprise-data-protection-for-ai-agent.md)
 
 ## DASHBOARDS
 
