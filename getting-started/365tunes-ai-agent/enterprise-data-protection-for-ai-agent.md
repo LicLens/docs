@@ -96,7 +96,7 @@ For more information about 365TUNE's security and compliance posture:
 
 Privacy Policy: [https://365tune.com/legal/privacy-policy/](https://365tune.com/legal/privacy-policy/)
 
-Data Protection Agreement: [365tune.com/data-protection](https://365tune.com/data-protection)
+Data Protection Agreement: [https://365tune.com/legal/dpisa/](https://365tune.com/legal/dpisa/)
 
 Terms and Conditions: [https://365tune.com/legal/terms-of-service/](https://365tune.com/legal/terms-of-service/)
 
