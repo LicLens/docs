@@ -45,7 +45,7 @@ Before proceeding, ensure:
 #### What this step does:
 
 * Allows the application to authenticate directly with Exchange Online
-* Enables app-only (non-user) access
+* Enables app-only access
 
 Further Explanation: Before assigning Exchange roles via PowerShell, you must first allow the application to authenticate directly against Exchange Online. This is done by granting the **Exchange.ManageAsApp** application permission. **Exchange.ManageAsApp** is the authentication gate for Exchange Online PowerShell app-only connection&#x73;**.** It does no, by itself, grant read or write access to any Exchange data.
 
