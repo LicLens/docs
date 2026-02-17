@@ -4,7 +4,7 @@ description: >-
   must grant the required permissions to Exchange.
 ---
 
-# Grant Permissions to Exchange Online
+# Grant Optional Permissions to Exchange Online
 
 By default, 365TUNE connects to Microsoft Graph to assess identity, directory, and core Microsoft 365 security configurations.
 
@@ -59,7 +59,7 @@ To add Exchnage API Permissions, follow these Steps:
 * Select **Grant admin consent for \[your organization]**
 * Select **Yes** to confirm
 
-### Step 2 - Connect to Exchange Online
+### Step 2 - Connect to Exchange Online PowerShell Module
 
 #### What this step does:
 
