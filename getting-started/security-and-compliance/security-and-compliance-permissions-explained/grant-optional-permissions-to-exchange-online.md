@@ -71,9 +71,11 @@ To add Exchnage API Permissions, follow these Steps:
 
 Open a Powershell window and run below commands;
 
+{% code lineNumbers="true" %}
 ```powershell
 Connect-ExchangeOnline
 ```
+{% endcode %}
 
 Login with your 'Global Administrator' or 'Exchange Online Administrator' Account.
 
@@ -83,20 +85,18 @@ Grant View-Only Access for the 365TUNE - Security and Compliance application
 
 #### What this step does:
 
-* Assigns Exchange’s built-in View-Only role
-* Grants read-only access to Exchange configuration
+* Assigns Exchange’s built-in View-Only role to the application.
 
 This step follows the principle of least privilege. Mailbox content or configuration changes are not allowed with these permissions.
 
+{% code overflow="wrap" lineNumbers="true" %}
 ```powershell
 $AppId = "2f30a894-e110-497c-b4bf-21ffd0b86de9" 
 $ObjectId = "<insert object ID from Entra Portal>" #refer step 3 in prerequsites
 $DisplayName = "365TUNE - Security and Compliance"
-```
-
-```powershell
 New-ServicePrincipal -AppId $AppId -ObjectId $ObjectId -DisplayName $DisplayName 
 New-ManagementRoleAssignment -Role "View-Only Configuration" -App $DisplayName
 ```
+{% endcode %}
 
 At this point, Exchange Online has been successfully configured for read-only assessment access. The 365TUNE - Security and Compliance application can securely authenticate to Exchange and retrieve configuration data based on the assigned View-Only role.
