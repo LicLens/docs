@@ -10,9 +10,9 @@ By default, 365TUNE connects to Microsoft Graph to assess identity, directory, a
 
 However, Some Exchange Online configuration data exists outside of Microsoft Graph and requires additional workload-specific permissions. These permission can be granted in 3 easy steps:
 
-1. Connect to Exchange online
-2. Grant View-Only Access to the Application
-3. Verify the Assignment
+1. Add Exchange API Permissions
+2. Connect to Exchange online
+3. Grant View-Only Access to the Application
 
 {% hint style="info" %}
 Enable this Exchange connection if you want 365TUNE to assess:
@@ -88,7 +88,7 @@ This step follows the principle of least privilege. Mailbox content or configura
 
 ```powershell
 $AppId = "2f30a894-e110-497c-b4bf-21ffd0b86de9" 
-$ObjectId = "<insert object ID from Entra Portal>" 
+$ObjectId = "<insert object ID from Entra Portal>" #refer step 3 in prerequsites
 $DisplayName = "365TUNE - Security and Compliance"
 ```
 
@@ -97,12 +97,4 @@ New-ServicePrincipal -AppId $AppId -ObjectId $ObjectId -DisplayName $DisplayName
 New-ManagementRoleAssignment -Role "View-Only Configuration" -App $DisplayName
 ```
 
-### Step 4 - Verify the Assignment
-
-#### What this step does:
-
-* Confirms that permissions are active and correctly assigned.
-
-```powershell
-Get-ManagementRoleAssignment -App $AppId
-```
+At this point, Exchange Online has been successfully configured for read-only assessment access. The 365TUNE - Security and Compliance application can securely authenticate to Exchange and retrieve configuration data based on the assigned View-Only role.
