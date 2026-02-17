@@ -71,7 +71,7 @@ To add Exchnage API Permissions, follow these Steps:
 
 Open a Powershell window and run below commands;
 
-{% code lineNumbers="true" %}
+{% code title="PowerShell" lineNumbers="true" %}
 ```powershell
 Connect-ExchangeOnline
 ```
@@ -89,7 +89,7 @@ Grant View-Only Access for the 365TUNE - Security and Compliance application
 
 This step follows the principle of least privilege. Mailbox content or configuration changes are not allowed with these permissions.
 
-{% code overflow="wrap" lineNumbers="true" %}
+{% code title="PowerShell" overflow="wrap" lineNumbers="true" %}
 ```powershell
 $AppId = "2f30a894-e110-497c-b4bf-21ffd0b86de9" 
 $ObjectId = "<insert object ID from Entra Portal>" #refer step 3 in prerequsites
