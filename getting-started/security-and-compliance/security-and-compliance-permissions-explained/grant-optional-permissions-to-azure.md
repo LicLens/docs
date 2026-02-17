@@ -49,6 +49,7 @@ This follows security best practices and least-privilege principles.
 
 
 
+{% code title="PowerShell" %}
 ```powershell
 $servicePrincipal = "<Object ID of the Entra App>" 
 $subscription = "<Any Subscription ID from your tenant>" 
@@ -67,3 +68,4 @@ New-AzRoleAssignment -ObjectId $servicePrincipal -Scope "/providers/Microsoft.aa
 $assignment = Get-AzRoleAssignment -RoleDefinitionId 18d7d88d-d35e-4fb5-a5c3-7773c20a72d9|?{$.Scope -eq "/" -and $.SignInName -eq (Get-AzContext).Account.Id} 
 $deleteAssignment = Invoke-AzRestMethod -Path "$($assignment.RoleAssignmentId)?api-version=2018-07-01" -Method DELETE
 ```
+{% endcode %}
