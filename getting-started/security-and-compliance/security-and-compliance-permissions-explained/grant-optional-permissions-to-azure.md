@@ -51,7 +51,7 @@ This follows security best practices and least-privilege principles.
 
 ```powershell
 $servicePrincipal = "<Object ID of the Entra App>" 
-$subscription = "<Any Subscription ID>" 
+$subscription = "<Any Subscription ID from your tenant>" 
 Install-Module Az.Accounts -Force 
 Install-Module Az.Resources -Force 
 Connect-AzAccount 
