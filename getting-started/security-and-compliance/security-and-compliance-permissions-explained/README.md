@@ -39,6 +39,22 @@ All permissions are **application type** with tenant-wide scope.
 | UserAuthenticationMethod.Read.All       | Read user authentication methods                     |
 | OnPremDirectorySynchronization.Read.All | Read Entra Connect sync configuration                |
 
+### Optional Permissions
+
+Some test require elevated permissions
+
+| Permission                   | Purpose                                |
+| ---------------------------- | -------------------------------------- |
+| ReportSettings.ReadWrite.All | Required to disable report obfuscation |
+
+In addition, 365TUNE required below optional permissions to complete some tests. Tests will be skipped if these permissions are not granted:
+
+Grant Permissions to Exchange Online
+
+Grant Permissions to Microsoft Teams
+
+Grant Permissions to Azure
+
 ### Permission Details by Category
 
 #### Device Management (Intune)
