@@ -8,11 +8,13 @@ description: >-
 
 By default, 365TUNE connects to Microsoft Graph to assess identity, directory, and core Microsoft 365 security configurations.
 
-However, Some Exchange Online configuration data exists outside of Microsoft Graph and requires additional workload-specific permissions. These permission can be granted in 3 easy steps:
+However, Some Exchange Online configuration data exists outside of Microsoft Graph and requires additional workload-specific permissions.&#x20;
 
-1. Add Exchange API Permissions
-2. Connect to Exchange online
-3. Grant View-Only Access to the Application
+These permission can be granted in **3 easy steps**:
+
+1. [Add Exchange API Permissions](grant-optional-permissions-to-exchange-online.md#step-1-add-exchange-api-permissions)
+2. [Connect to Exchange online](grant-optional-permissions-to-exchange-online.md#step-2-connect-to-exchange-online-powershell-module)
+3. [Grant View-Only Access to the Application](grant-optional-permissions-to-exchange-online.md#step-3-grant-view-only-access-to-the-application)
 
 {% hint style="info" %}
 Enable this Exchange connection if you want 365TUNE to assess:
