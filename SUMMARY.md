@@ -15,7 +15,7 @@
   * [Understanding the Admin Consent Request](getting-started/understanding-the-basics/understanding-the-admin-consent-request.md)
 * [Security and Compliance](getting-started/security-and-compliance/README.md)
   * [Security and Compliance: Permissions Explained](getting-started/security-and-compliance/security-and-compliance-permissions-explained/README.md)
-    * [Grant Permissions to Exchange Online](getting-started/security-and-compliance/security-and-compliance-permissions-explained/grant-permissions-to-exchange-online.md)
+    * [Grant Optional Permissions to Exchange Online](getting-started/security-and-compliance/security-and-compliance-permissions-explained/grant-optional-permissions-to-exchange-online.md)
   * [Understanding Security and Compliance](getting-started/security-and-compliance/understanding-security-and-compliance.md)
   * [CIS Microsoft 365 Foundations Benchmark](getting-started/security-and-compliance/cis-microsoft-365-foundations-benchmark.md)
   * [CISA Secure Cloud Business Applications](getting-started/security-and-compliance/cisa-secure-cloud-business-applications.md)
