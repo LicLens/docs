@@ -36,6 +36,10 @@ Optionally, Add-ons can be purchased to increase number of Admin seats and to pu
 
 <table data-full-width="false"><thead><tr><th>Add-ons</th><th>Cost Per Month</th></tr></thead><tbody><tr><td>Reporting Agents</td><td>$10 / Agent</td></tr><tr><td>AI Tokens</td><td>$25 / 1 Million Tokens</td></tr></tbody></table>
 
+{% hint style="success" %}
+<mark style="color:$primary;">All features are included in the platform fee. There are no feature, report or dashboard specific Add-ons.</mark>
+{% endhint %}
+
 ### Billing Basics
 
 * **Billing Frequency:**
