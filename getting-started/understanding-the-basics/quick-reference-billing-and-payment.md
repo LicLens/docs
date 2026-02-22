@@ -8,7 +8,7 @@ description: This guide explains how billing and payments work for the 365tune.
 
 We offer two subscription options depending on your needs:
 
-<table data-full-width="true"><thead><tr><th>Plan</th><th width="131">Platform Fee</th><th>Cost Per License</th><th>Reporting Agents</th><th>AI Agent Tokens</th><th>Number of Tenants &#x26; Users</th></tr></thead><tbody><tr><td><strong>Standard</strong></td><td>$99</td><td>$0.02/License</td><td>5 Seats</td><td>1 Million</td><td>Unlimited</td></tr><tr><td><strong>Enterprise*</strong></td><td>$99</td><td>$0.05/License</td><td>5 Seats</td><td>1 Million</td><td>Unlimited</td></tr></tbody></table>
+<table data-full-width="false"><thead><tr><th>Plan</th><th width="131">Platform Fee</th><th>Cost Per License</th><th>Reporting Agents</th><th>AI Agent Tokens</th><th>Number of Tenants &#x26; Users</th></tr></thead><tbody><tr><td><strong>Standard</strong></td><td>$99</td><td>$0.02/License</td><td>5 Seats</td><td>1 Million</td><td>Unlimited</td></tr><tr><td><strong>Enterprise*</strong></td><td>$99</td><td>$0.05/License</td><td>5 Seats</td><td>1 Million</td><td>Unlimited</td></tr></tbody></table>
 
 * **All costs are per month basis**
 * **Platform Fee:** This fee covers unlimited tenants and users
