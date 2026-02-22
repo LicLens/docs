@@ -34,7 +34,7 @@ Billing is based on the **total purchased Microsoft 365 licenses** in your tenan
 
 Optionally, Add-ons can be purchased to increase number of Admin seats and to purchase additional AI tokens to use with AI Agent.
 
-<table data-full-width="true"><thead><tr><th>Add-ons</th><th>Cost Per Month</th></tr></thead><tbody><tr><td>Reporting Agents</td><td>$10 / Agent</td></tr><tr><td>AI Tokens</td><td>$25 / 1 Million Tokens</td></tr></tbody></table>
+<table data-full-width="false"><thead><tr><th>Add-ons</th><th>Cost Per Month</th></tr></thead><tbody><tr><td>Reporting Agents</td><td>$10 / Agent</td></tr><tr><td>AI Tokens</td><td>$25 / 1 Million Tokens</td></tr></tbody></table>
 
 ### Billing Basics
 
