@@ -8,16 +8,16 @@ description: This guide explains how billing and payments work for the 365tune.
 
 We offer two subscription options depending on your needs:
 
-<table><thead><tr><th>Plan</th><th width="131">Monthly Fee</th><th width="142">Users Included</th><th>Extra Users</th><th width="171">Reporting Agents</th><th>Data Retention</th><th>Support</th></tr></thead><tbody><tr><td><strong>Standard</strong></td><td>$99</td><td>300</td><td>$0.02/user</td><td>5 (add $10/agent)</td><td>12 months</td><td>Email &#x26; Chat (business hrs)</td></tr><tr><td><strong>Enterprise</strong></td><td>$99</td><td>300</td><td>$0.05/user</td><td>10 (add $10/agent)</td><td>36 months</td><td>Priority SLA</td></tr></tbody></table>
+<table data-full-width="true"><thead><tr><th>Plan</th><th width="131">Platform Fee</th><th>Cost Per License</th><th>Reporting Agents</th><th>AI Agent Tokens</th><th>Number of Tenants &#x26; Users</th></tr></thead><tbody><tr><td><strong>Standard</strong></td><td>$99</td><td>$0.02/License</td><td>5 Seats</td><td>1 Million</td><td>Unlimited</td></tr><tr><td><strong>Enterprise*</strong></td><td>$99</td><td>$0.05/License</td><td>5 Seats</td><td>1 Million</td><td>Unlimited</td></tr></tbody></table>
 
-**Explanation of key terms:**
-
-* **Users Included:** Number of Microsoft 365 licensed users covered by the base fee.
-* **Extra Users:** Cost per user beyond the included limit.
+* **All costs are per month basis**
+* **Platform Fee:** This fee covers unlimited tenants and users
 * **Reporting Agents:** Admin/Agents who can access the platform. Additional agents can be purchased if needed.
-* **Data Retention:** How long your reporting data is stored and accessible.
+* **All Features Inclusive**: All features, reports and dashboards are included.
 
-### Who Counts as a User?
+\*Enterprise Plan is currently in Private Preview, Estimated General Availability is Q3 2026.
+
+### What Counts as a License?
 
 Billing is based on the **total purchased Microsoft 365 licenses** in your tenant. Only primary licenses are considered for billing, these include:
 
@@ -30,6 +30,12 @@ Billing is based on the **total purchased Microsoft 365 licenses** in your tenan
 {% hint style="success" %}
 <mark style="color:$primary;">License counts are taken</mark> <mark style="color:$primary;"></mark><mark style="color:$primary;">**directly from the Microsoft Graph API**</mark> <mark style="color:$primary;"></mark><mark style="color:$primary;">(</mark><mark style="color:$primary;">`subscribedSkus`</mark><mark style="color:$primary;">), ensuring transparency and accuracy.</mark>
 {% endhint %}
+
+### Add-ons
+
+Optionally, Add-ons can be purchased to increase number of Admin seats and to purchase additional AI tokens to use with AI Agent.
+
+<table data-full-width="true"><thead><tr><th>Add-ons</th><th>Cost Per Month</th></tr></thead><tbody><tr><td>Reporting Agents</td><td>$10 / Agent</td></tr><tr><td>AI Tokens</td><td>$25 / 1 Million Tokens</td></tr></tbody></table>
 
 ### Billing Basics
 
