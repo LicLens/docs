@@ -24,19 +24,9 @@ Enable this Exchange connection if you want 365TUNE to assess:
 
 These permission can be granted by installing 365TUNE PowerShell module.
 
-### What this step does:
-
-This step will
-
-1. Assign **Exchange.ManageAsApp** permission to the 365TUNE Service Principle in Entra ID. (Exchange.ManageAsApp is the authentication gate for Exchange Online PowerShell app-only connection&#x73;**.** It does not, by itself, grant read or write access to any Exchange data.)
-2. Assigns Exchange’s built-in **View-Only** role to the to the 365TUNE Service Principle in Entra ID.
-
 ### Prerequisites
 
-Before proceeding, ensure your account have one of the following roles:
-
-* Global Administrator
-* Exchange Administrator
+Before proceeding, ensure your account have Global Amdinistrator roles.
 
 ### Step 1 - Login to Azure Cloud Shell
 
@@ -54,6 +44,8 @@ Install-Module 365TUNE -Scope CurrentUser
 ```
 {% endcode %}
 
+This step will install 365TUNE's PowerShell module in your Cloud Shell session. (The Cloud Shell session is ephemeral so no files or system changes will persist beyond your current session.)
+
 ### Step 3 - Invoke Exchange connect function
 
 Run command
@@ -63,6 +55,11 @@ Run command
 Invoke-365TuneConnectExchange
 ```
 {% endcode %}
+
+This step will:
+
+* Assign **Exchange.ManageAsApp** permission to the 365TUNE Service Principle in Entra ID. (Exchange.ManageAsApp is the authentication gate for Exchange Online PowerShell app-only connection&#x73;**.** It does not, by itself, grant read or write access to any Exchange data.)
+* Assigns Exchange’s built-in **View-Only** role to the to the 365TUNE Service Principle in Entra ID.
 
 ***
 
