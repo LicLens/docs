@@ -63,7 +63,7 @@ This step will:
 
 ***
 
-## Alternative Options
+## Alternate Option (Add Permissions Manually)
 
 These permission also can be granted manually:
 
