@@ -22,11 +22,51 @@ Enable this Exchange connection if you want 365TUNE to assess:
 **These steps are optional. If you do not need these checks, you can skip this section.**
 {% endhint %}
 
-These permission can be granted by installing 365TUNE PowerShell module
+These permission can be granted by installing 365TUNE PowerShell module.
 
+### What this step does:
 
+This step will
 
-Alternative Optio
+1. Assign **Exchange.ManageAsApp** permission to the 365TUNE Service Principle in Entra ID. (Exchange.ManageAsApp is the authentication gate for Exchange Online PowerShell app-only connection&#x73;**.** It does not, by itself, grant read or write access to any Exchange data.)
+2. Assigns Exchange’s built-in **View-Only** role to the to the 365TUNE Service Principle in Entra ID.
+
+### Prerequisites
+
+Before proceeding, ensure your account have one of the following roles:
+
+* Global Administrator
+* Exchange Administrator
+
+### Step 1 - Login to Azure Cloud Shell
+
+We recommend using  Azure Cloud Shell, alternatively you can use PowerShell v7+ locally.
+
+Navigate to [https://portal.azure.com/#cloudshell/](https://portal.azure.com/#cloudshell/)
+
+### Step 2 - Install 365TUNE module
+
+Run command&#x20;
+
+{% code title="PowerShell" %}
+```powershell
+Install-Module 365TUNE -Scope CurrentUser
+```
+{% endcode %}
+
+### Step 3 - Invoke Exchange connect function
+
+Run command
+
+{% code title="PowerShell" %}
+```powershell
+Invoke-365TuneConnectExchange
+```
+{% endcode %}
+
+***
+
+## Alternative Options
 
 These permission also can be granted manually:
 
@@ -34,7 +74,7 @@ These permission also can be granted manually:
 2. [Connect to Exchange online](grant-optional-permissions-to-exchange-online.md#step-2-connect-to-exchange-online-powershell-module)
 3. [Grant View-Only Access to the Application](grant-optional-permissions-to-exchange-online.md#step-3-grant-view-only-access-to-the-application)
 
-### Prerequisites
+### Manual Steps Prerequisites
 
 Before proceeding, ensure:
 
