@@ -33,21 +33,49 @@ You must assign **Reader** permissions at:
 
 This is required only to temporarily elevate your own access to assign the role at root scop.
 
-### What this script will do:
+### Step 1 - Login to Azure Cloud Shell
 
-When executed by a Global Administrator, the script will:
+We recommend using  Azure Cloud Shell, alternatively you can run these commands in PowerShell v7+ locally.
 
-1. Install required Azure PowerShell modules
-2. Prompt you to sign in
-3. Temporarily elevate your access to the root scope
-4. Assign **Reader** role to 365TUNE at:
+Navigate to [https://portal.azure.com/#cloudshell/](https://portal.azure.com/#cloudshell/)
+
+### Step 2 - Install 365TUNE module
+
+Run command (ignore if already installed)
+
+{% code title="PowerShell" %}
+```powershell
+Install-Module 365TUNE -Scope CurrentUser -force
+```
+{% endcode %}
+
+This step will install 365TUNE's PowerShell module in your Cloud Shell session. (The Cloud Shell session is ephemeral so no files or system changes will persist beyond your current session.)
+
+### Step 3 - Invoke Azure connect function
+
+Run command
+
+{% code title="PowerShell" %}
+```powershell
+Invoke-365TuneConnectAzure
+```
+{% endcode %}
+
+This step will:
+
+1. Temporarily elevate your access to the root scope
+2. Assign **Reader** role to 365TUNE at:
    * Root scope (`"/"`)
    * Microsoft Entra ID provider scope
-5. Remove your temporary elevated root access
+3. Remove your temporary elevated root access
 
 This follows security best practices and least-privilege principles.
 
+***
 
+### Alternate Option (PowerShell Script)
+
+To run the script manually, use the below script. Update the $servicePrincipal and $subscription variables. You can use any subscription ID from your tenant.
 
 {% code title="PowerShell" %}
 ```powershell
@@ -65,7 +93,15 @@ New-AzRoleAssignment -ObjectId $servicePrincipal -Scope "/" -RoleDefinitionName 
 New-AzRoleAssignment -ObjectId $servicePrincipal -Scope "/providers/Microsoft.aadiam" -RoleDefinitionName "Reader" -ObjectType "ServicePrincipal"
 
 #Remove root scope access 
-$assignment = Get-AzRoleAssignment -RoleDefinitionId 18d7d88d-d35e-4fb5-a5c3-7773c20a72d9|?{$.Scope -eq "/" -and $.SignInName -eq (Get-AzContext).Account.Id} 
+$assignment = Get-AzRoleAssignment -RoleDefinitionId 18d7d88d-d35e-4fb5-a5c3-7773c20a72d9 | Where-Object { $_.Scope -eq "/" -and $_.SignInName -eq (Get-AzContext).Account.Id }
 $deleteAssignment = Invoke-AzRestMethod -Path "$($assignment.RoleAssignmentId)?api-version=2018-07-01" -Method DELETE
+```
+{% endcode %}
+
+To check if the Root scope was removed successfully run below command; StatusCode : 200 or 204 indicates the elevated permissions were removed successfully. 404 indicates the elevation was already removed.
+
+{% code title="PowerShell" %}
+```powershell
+$deleteAssignment.StatusCode
 ```
 {% endcode %}

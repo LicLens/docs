@@ -26,7 +26,7 @@ These permission can be granted by installing 365TUNE PowerShell module.
 
 ### Prerequisites
 
-Before proceeding, ensure your account have Global Amdinistrator roles.
+Before proceeding, ensure your account have Global Administrator roles.
 
 ### Step 1 - Login to Azure Cloud Shell
 
@@ -40,11 +40,11 @@ Run command&#x20;
 
 {% code title="PowerShell" %}
 ```powershell
-Install-Module 365TUNE -Scope CurrentUser
+Install-Module 365TUNE -Scope CurrentUser -force
 ```
 {% endcode %}
 
-This step will install 365TUNE's PowerShell module in your Cloud Shell session. (The Cloud Shell session is ephemeral so no files or system changes will persist beyond your current session.)
+This step will install 365TUNE's PowerShell module in your Cloud Shell session. The Cloud Shell session is ephemeral so no files or system changes will persist beyond your current session.
 
 ### Step 3 - Invoke Exchange connect function
 
@@ -58,7 +58,7 @@ Invoke-365TuneConnectExchange
 
 This step will:
 
-* Assign **Exchange.ManageAsApp** permission to the 365TUNE Service Principle in Entra ID. (Exchange.ManageAsApp is the authentication gate for Exchange Online PowerShell app-only connection&#x73;**.** It does not, by itself, grant read or write access to any Exchange data.)
+* Assign **Exchange.ManageAsApp** permission to the 365TUNE Service Principle in Entra ID. Exchange.ManageAsApp is the authentication gate for Exchange Online PowerShell app-only connection&#x73;**.** It does not, by itself, grant read or write access to any Exchange data.
 * Assigns Exchange’s built-in **View-Only** role to the to the 365TUNE Service Principle in Entra ID.
 
 ***
@@ -94,9 +94,9 @@ Before proceeding, ensure:
 
 Further Explanation: Before assigning Exchange roles via PowerShell, you must first allow the application to authenticate directly against Exchange Online. This is done by granting the **Exchange.ManageAsApp** application permission. **Exchange.ManageAsApp** is the authentication gate for Exchange Online PowerShell app-only connection&#x73;**.** It does no, by itself, grant read or write access to any Exchange data.
 
-To add Exchnage API Permissions, follow these Steps:
+To add Exchange API Permissions, follow these Steps:
 
-* Open the application "365TUNE Security and Compliance" (Refer Step 3 in prerequsites)
+* Open the application "365TUNE Security and Compliance" (Refer Step 3 in prerequisites)
 * Select **API permissions** > **Add a permission**
 * Select **APIs that my organization uses** > search for **Office 365 Exchange Online** > **Application permissions**
 * Search for `Exchange.ManageAsApp`
