@@ -61,6 +61,8 @@ This step will:
 * Assign **Exchange.ManageAsApp** permission to the 365TUNE Service Principle in Entra ID. Exchange.ManageAsApp is the authentication gate for Exchange Online PowerShell app-only connection&#x73;**.** It does not, by itself, grant read or write access to any Exchange data.
 * Assigns Exchange’s built-in **View-Only** role to the to the 365TUNE Service Principle in Entra ID.
 
+Once the Invoke Exchange connect function is executed successfully, the security and compliance tests would now include the exchange related tests that were previously skipped.
+
 ***
 
 ## Alternate Option (Add Permissions Manually)

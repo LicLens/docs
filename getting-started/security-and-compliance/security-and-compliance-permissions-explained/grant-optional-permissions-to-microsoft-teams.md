@@ -28,3 +28,5 @@ Log in to  [https://entra.microsoft.com/](https://entra.microsoft.com/) as a Glo
 * Ensure that **Active** and **Permanently assigned** are ticked
 * Enter **Justification**
 * Select **Assign** to confirm.
+
+Once the Invoke Teams connect function is executed successfully, the security and compliance tests would now include the Teams related tests that were previously skipped.

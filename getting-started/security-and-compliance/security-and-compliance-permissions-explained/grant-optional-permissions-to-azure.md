@@ -71,6 +71,8 @@ This step will:
 
 This follows security best practices and least-privilege principles.
 
+Once the Invoke Azure connect function is executed successfully, the security and compliance tests would now include the Azure related tests that were previously skipped.
+
 ***
 
 ### Alternate Option (PowerShell Script)
