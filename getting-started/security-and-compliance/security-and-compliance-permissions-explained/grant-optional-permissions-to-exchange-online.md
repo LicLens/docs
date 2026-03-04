@@ -26,17 +26,11 @@ These permission can be granted by installing 365TUNE PowerShell module.
 
 ### Prerequisites
 
-Before proceeding, ensure your account have Global Administrator roles.
+Before proceeding, ensure your account have Global Administrator roles. And, PowerShell 7 is required.
 
-### Step 1 - Login to Azure Cloud Shell
+### Step 1 - Install 365TUNE module
 
-We recommend using  Azure Cloud Shell, alternatively you can use PowerShell v7+ locally.
-
-Navigate to [https://portal.azure.com/#cloudshell/](https://portal.azure.com/#cloudshell/)
-
-### Step 2 - Install 365TUNE module
-
-Run command&#x20;
+Run command in a PowerShell 7 terminal
 
 {% code title="PowerShell" %}
 ```powershell
@@ -46,7 +40,7 @@ Install-Module 365TUNE -Scope CurrentUser -force
 
 This step will install 365TUNE's PowerShell module in your Cloud Shell session. The Cloud Shell session is ephemeral so no files or system changes will persist beyond your current session.
 
-### Step 3 - Invoke Exchange connect function
+### Step 2 - Invoke Exchange connect function
 
 Run command
 
