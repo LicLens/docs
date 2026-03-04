@@ -31,15 +31,11 @@ You must assign **Reader** permissions at:
 
 **Global Administrator** Permissions is required to run the script to grant required permissions in Microsoft Entra ID
 
+Powershell 7 is required
+
 This is required only to temporarily elevate your own access to assign the role at root scop.
 
-### Step 1 - Login to Azure Cloud Shell
-
-We recommend using  Azure Cloud Shell, alternatively you can run these commands in PowerShell v7+ locally.
-
-Navigate to [https://portal.azure.com/#cloudshell/](https://portal.azure.com/#cloudshell/)
-
-### Step 2 - Install 365TUNE module
+### Step 1 - Install 365TUNE module
 
 Run command (ignore if already installed)
 
@@ -51,7 +47,7 @@ Install-Module 365TUNE -Scope CurrentUser -force
 
 This step will install 365TUNE's PowerShell module in your Cloud Shell session. (The Cloud Shell session is ephemeral so no files or system changes will persist beyond your current session.)
 
-### Step 3 - Invoke Azure connect function
+### Step 2 - Invoke Azure connect function
 
 Run command
 
