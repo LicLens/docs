@@ -29,6 +29,7 @@
   * [Enterprise Data Protection for AI Agent](getting-started/365tunes-ai-agent/enterprise-data-protection-for-ai-agent.md)
 * [Baseline Drift Analysis](getting-started/baseline-drift-analysis/README.md)
   * [Baseline Drift Analysis: Permissions Explained](getting-started/baseline-drift-analysis/baseline-drift-analysis-permissions-explained.md)
+  * [Baseline Drift Restore: Permissions Explained](getting-started/baseline-drift-analysis/baseline-drift-restore-permissions-explained.md)
 
 ## DASHBOARDS
 
