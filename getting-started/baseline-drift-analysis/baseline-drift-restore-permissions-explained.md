@@ -97,7 +97,7 @@ This permission allows 365TUNE to read and restore Conditional Access policies â
 * Recreating policies that were deleted, using the captured baseline snapshot as the source of truth
 
 {% hint style="info" %}
-**Important:** Changes to Conditional Access policies can affect authentication for all users in the tenant. All Conditional Access restore actions in 365TUNE require explicit administrator confirmation before execution and are logged in full in the platform audit trail.&#x20;
+**Important:** Changes to Conditional Access policies can affect authentication for all users in the tenant. All Conditional Access restore actions in 365TUNE should be carefully reviewed and require explicit administrator confirmation before execution and are logged in full in the platform audit trail.&#x20;
 {% endhint %}
 
 ***
