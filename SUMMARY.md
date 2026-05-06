@@ -27,6 +27,8 @@
   * [Management and Automation: Permissions Explained](getting-started/management-and-automation/management-and-automation-permissions-explained.md)
 * [365TUNE's AI Agent](getting-started/365tunes-ai-agent/README.md)
   * [Enterprise Data Protection for AI Agent](getting-started/365tunes-ai-agent/enterprise-data-protection-for-ai-agent.md)
+* [Baseline Drift Analysis](getting-started/baseline-drift-analysis/README.md)
+  * [Baseline Drift Analysis: Permissions Explained](getting-started/baseline-drift-analysis/baseline-drift-analysis-permissions-explained.md)
 
 ## DASHBOARDS
 
