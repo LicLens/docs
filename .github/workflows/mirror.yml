@@ -1,0 +1,20 @@
+name: Mirror to readme.com repo
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push main → v1.0 on readme repo
+        run: |
+          git remote add destination https://x-access-token:${{ secrets.MIRROR_PAT }}@github.com/LicLens/readme.git
+          git push destination refs/remotes/origin/main:refs/heads/v1.0 --force
