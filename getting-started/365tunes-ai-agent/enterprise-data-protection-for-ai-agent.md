@@ -28,7 +28,7 @@ The AI Agent operates within the security boundary of your existing Microsoft 36
 
 Your permissions apply: The AI Agent can only access data that the authenticated user has permission to view in Microsoft 365 and 365TUNE. It respects all existing role-based access controls, security groups, and conditional access policies.
 
-### What data is sent to AI processing
+### What data is sent to AI processing?
 
 365TUNE applies data minimization principles when processing AI requests. Only the information necessary to respond to your query is included in AI processing. The platform automatically filters sensitive information before transmission.
 
@@ -48,7 +48,7 @@ The processing flow works as follows:
 4. Response returns through the same secure path
 5. Results display in 365TUNE interface
 
-Microsoft's Azure Product Terms and Data Processing Agreement govern the infrastructure layer.&#x20;
+Microsoft's Azure Product Terms and Data Processing Agreement govern the infrastructure layer.
 
 ### Encryption protects data in transit and at rest
 
@@ -86,7 +86,7 @@ No. Prompts, responses, and Microsoft 365 data processed through the 365TUNE AI 
 
 #### Can I control what data the AI Agent accesses?
 
-Yes. The AI Agent respects your existing Microsoft 365 and 365TUNE permissions.&#x20;
+Yes. The AI Agent respects your existing Microsoft 365 and 365TUNE permissions.
 
 ### Additional resources
 
