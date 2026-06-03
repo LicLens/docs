@@ -30,6 +30,8 @@
 * [Baseline Drift Analysis](getting-started/baseline-drift-analysis/README.md)
   * [Baseline Drift Analysis: Permissions Explained](getting-started/baseline-drift-analysis/baseline-drift-analysis-permissions-explained.md)
   * [Baseline Drift Restore: Permissions Explained](getting-started/baseline-drift-analysis/baseline-drift-restore-permissions-explained.md)
+* [SharePoint](getting-started/sharepoint/README.md)
+  * [SharePoint Advanced Reports & Permissions](getting-started/sharepoint/sharepoint-advanced-reports-and-permissions.md)
 
 ## DASHBOARDS
 
