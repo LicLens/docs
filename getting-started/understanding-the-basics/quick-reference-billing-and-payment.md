@@ -8,7 +8,7 @@ description: This guide explains how billing and payments work for the 365tune.
 
 We offer two subscription options depending on your needs:
 
-<table data-full-width="false"><thead><tr><th>Plan</th><th width="110">Platform Fee</th><th>Cost Per License</th><th width="113">Reporting Agents</th><th width="108">AI Agent Tokens</th><th>Tenants &#x26; Users</th></tr></thead><tbody><tr><td><strong>Standard</strong></td><td>$99</td><td>$0.02/License</td><td>5 Seats</td><td>1 Million</td><td>Unlimited</td></tr><tr><td><strong>Enterprise*</strong></td><td>$99</td><td>$0.05/License</td><td>5 Seats</td><td>1 Million</td><td>Unlimited</td></tr></tbody></table>
+<table data-full-width="false"><thead><tr><th>Plan</th><th width="110">Platform Fee</th><th>Cost Per License</th><th width="113">Reporting Agents</th><th width="108">AI Agent Tokens</th><th>Tenants &#x26; Users</th></tr></thead><tbody><tr><td><strong>Standard</strong></td><td>$99</td><td>$0.05/License</td><td>5 Seats</td><td>1 Million</td><td>Unlimited</td></tr><tr><td><strong>Enterprise*</strong></td><td>$199</td><td>$0.09/License</td><td>5 Seats</td><td>1 Million</td><td>Unlimited</td></tr></tbody></table>
 
 * **All costs are per month basis**
 * **Platform Fee:** This fee covers All features, reports and dashboards
@@ -27,7 +27,7 @@ Billing is based on the **total purchased Microsoft 365 licenses** in your tenan
 * **Government Plans:** Office 365 GCC and GCC High
 
 {% hint style="success" %}
-<mark style="color:$primary;">License counts are taken</mark> <mark style="color:$primary;"></mark><mark style="color:$primary;">**directly from the Microsoft Graph API**</mark> <mark style="color:$primary;"></mark><mark style="color:$primary;">(</mark><mark style="color:$primary;">`subscribedSkus`</mark><mark style="color:$primary;">), ensuring transparency and accuracy.</mark>
+<mark style="color:$primary;">License counts are taken</mark> <mark style="color:$primary;">**directly from the Microsoft Graph API**</mark> <mark style="color:$primary;">(</mark><mark style="color:$primary;">`subscribedSkus`</mark><mark style="color:$primary;">), ensuring transparency and accuracy.</mark>
 {% endhint %}
 
 ### Add-ons
