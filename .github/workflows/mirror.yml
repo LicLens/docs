@@ -30,7 +30,7 @@ jobs:
           rm -rf readme/docs/Documentation/.gitbook
           rm -rf readme/docs/Documentation/.github
 
-      - name: Sync docs → readme/docs/Documentation
+      - name: Sync docs to readme/docs/Documentation
         run: |
           mkdir -p readme/docs/Documentation
           rsync -av --delete \
@@ -39,12 +39,73 @@ jobs:
             --exclude='.gitbook' \
             --exclude='SUMMARY.md' \
             --exclude='_order.yaml' \
-            docs/  readme/docs/Documentation/
-          #  ↑ Also exclude any hand-crafted _order.yaml from source
-          #    so only the generated ones (below) are authoritative
+            docs/ readme/docs/Documentation/
 
-      - name: Relocate .gitbook/assets → assets and rewrite references
+      - name: Relocate gitbook assets and rewrite references
         run: |
           cd readme/docs/Documentation
+          if [ -d ".gitbook/assets" ]; then
+            mkdir -p assets
+            cp -a .gitbook/assets/. assets/
+            rm -rf .gitbook
+          fi
+          find . -type f -name '*.md' -print0 | xargs -0 --no-run-if-empty sed -i -E \
+            -e 's#(\.\./)*\.gitbook/assets#assets#g' \
+            -e 's#\./\.gitbook/assets#assets#g' \
+            -e 's#\.gitbook/assets#assets#g'
 
-          if [ -d ".gitbook/assets" ];
+      - name: Generate _order.yaml files from SUMMARY.md
+        run: |
+          python3 - <<'EOF'
+          import re, os, yaml
+
+          summary_path = "docs/SUMMARY.md"
+          output_root  = "readme/docs/Documentation"
+
+          if not os.path.exists(summary_path):
+              print("No SUMMARY.md found, skipping _order.yaml generation")
+              exit(0)
+
+          with open(summary_path) as f:
+              lines = f.readlines()
+
+          entry_re = re.compile(r'^\s*[\*\-]\s+\[.*?\]\((.*?)\)')
+
+          folder_order = {}
+
+          for line in lines:
+              m = entry_re.match(line)
+              if not m:
+                  continue
+              rel = m.group(1).strip()
+              if not rel.endswith('.md'):
+                  continue
+              parts = rel.split('/')
+              if len(parts) == 1:
+                  folder = ""
+              else:
+                  folder = "/".join(parts[:-1])
+              slug = parts[-1].replace('.md', '')
+              folder_order.setdefault(folder, []).append(slug)
+
+          for folder, slugs in folder_order.items():
+              out_dir = os.path.join(output_root, folder) if folder else output_root
+              os.makedirs(out_dir, exist_ok=True)
+              out_path = os.path.join(out_dir, "_order.yaml")
+              with open(out_path, "w") as f:
+                  yaml.dump(slugs, f, default_flow_style=False, allow_unicode=True)
+              print(f"Wrote {out_path}: {slugs}")
+          EOF
+
+      - name: Commit and push to readme
+        run: |
+          cd readme
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/Documentation/
+          if git diff --staged --quiet; then
+            echo "No changes to commit - skipping."
+          else
+            git commit -m "Sync from docs repo @ ${{ github.sha }}"
+            git push origin v1.0
+          fi
