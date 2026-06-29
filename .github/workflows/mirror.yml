@@ -8,7 +8,6 @@ on:
 jobs:
   mirror:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout docs (source)
         uses: actions/checkout@v4
@@ -22,28 +21,59 @@ jobs:
           repository: LicLens/readme
           ref: v1.0
           path: readme
-          fetch-depth: 0
+          fetch-depth: 0                    # avoids shallow-push failures on divergence
           ssh-key: ${{ secrets.DEPLOY_KEY }}
 
-      - name: Clean stale artifacts from destination
+      - name: Detect summary field (excerpt vs summary)
         run: |
-          rm -rf readme/docs/Documentation/.gitbook
-          rm -rf readme/docs/Documentation/.github
-          rm -f  readme/docs/Documentation/SUMMARY.md
-          find readme/docs/Documentation -name '_order.yaml' -delete
+          # Decide which field ReadMe expects by inspecting the destination repo's
+          # existing pages BEFORE the sync overwrites anything. Result -> $GITHUB_ENV.
+          python3 - <<'EOF'
+          import os, re, glob
 
-      - name: Sync docs to readme/docs/Documentation
+          readme_root = "readme"
+          counts = {"summary": 0, "excerpt": 0}
+          for path in glob.glob(os.path.join(readme_root, "**", "*.md"), recursive=True):
+              raw = open(path, encoding="utf-8").read()
+              if not raw.lstrip().startswith("---"):
+                  continue
+              fm = raw.split("---", 2)[1]
+              for field in counts:
+                  if re.search(rf'^\s*{field}\s*:', fm, re.MULTILINE):
+                      counts[field] += 1
+
+          # Refactored signals: Refactored-only top-level folders, OR the presence
+          # of _order.yaml nav files (a Refactored bi-directional-sync construct).
+          refactored = (
+              any(os.path.isdir(os.path.join(readme_root, d))
+                  for d in ("custom_pages", "recipes", "reference"))
+              or bool(glob.glob(os.path.join(readme_root, "**", "_order.yaml"), recursive=True))
+          )
+
+          if counts["summary"] > counts["excerpt"]:
+              field = "summary"
+          elif counts["excerpt"] > counts["summary"]:
+              field = "excerpt"
+          else:
+              field = "summary" if refactored else "excerpt"
+
+          print(f"counts={counts} refactored={refactored} -> SUMMARY_FIELD={field}")
+          with open(os.environ["GITHUB_ENV"], "a") as f:
+              f.write(f"SUMMARY_FIELD={field}\n")
+          EOF
+
+      - name: Sync docs → readme/docs/Documentation
         run: |
           mkdir -p readme/docs/Documentation
+          # Trailing slash on source = copy CONTENTS, not the folder itself.
+          # Exclude SUMMARY.md (ReadMe ignores it; we convert it to _order.yaml below).
           rsync -av --delete \
             --exclude='.git' \
             --exclude='.github' \
-            --exclude='.gitbook' \
             --exclude='SUMMARY.md' \
-            --exclude='_order.yaml' \
             docs/ readme/docs/Documentation/
 
-      - name: Relocate gitbook assets and rewrite references
+      - name: Relocate .gitbook/assets → assets and rewrite references
         run: |
           cd readme/docs/Documentation
           if [ -d ".gitbook/assets" ]; then
@@ -51,10 +81,89 @@ jobs:
             cp -a .gitbook/assets/. assets/
             rm -rf .gitbook
           fi
+          # Rewrite every .gitbook/assets variant in markdown:
+          # .gitbook/assets, ./.gitbook/assets, and any ../ depth.
           find . -type f -name '*.md' -print0 | xargs -0 --no-run-if-empty sed -i -E \
             -e 's#(\.\./)*\.gitbook/assets#assets#g' \
             -e 's#\./\.gitbook/assets#assets#g' \
             -e 's#\.gitbook/assets#assets#g'
+
+      - name: Inject / merge ReadMe frontmatter (title / summary / hidden)
+        run: |
+          python3 - <<'EOF'
+          import os, re, glob, yaml
+
+          summary_path  = "docs/SUMMARY.md"
+          root          = "readme/docs/Documentation"
+          # Field is auto-detected by the "Detect summary field" step above.
+          SUMMARY_FIELD = os.environ.get("SUMMARY_FIELD", "excerpt")
+          # GitBook-only frontmatter keys ReadMe doesn't consume — drop to keep it clean.
+          STRIP_KEYS    = {"cover", "coverY", "coverYAdjust", "icon", "layout"}
+
+          title_map = {}
+          if os.path.exists(summary_path):
+              link_re = re.compile(r'\[([^\]]+)\]\(([^)]+\.md)\)')
+              for line in open(summary_path, encoding="utf-8"):
+                  m = link_re.search(line)
+                  if m:
+                      title_map[m.group(2).strip().lstrip("./")] = m.group(1).strip()
+
+          def split_frontmatter(raw):
+              if raw.lstrip().startswith('---'):
+                  m = re.match(r'^\s*---\s*\n(.*?)\n---\s*\n?(.*)$', raw, re.DOTALL)
+                  if m:
+                      try:
+                          data = yaml.safe_load(m.group(1)) or {}
+                      except yaml.YAMLError:
+                          data = {}
+                      if isinstance(data, dict):
+                          return data, m.group(2)
+              return {}, raw
+
+          def first_h1(text):
+              m = re.search(r'^\s*#\s+(.+?)\s*$', text, re.MULTILINE)
+              return m.group(1).strip() if m else None
+
+          def first_paragraph(text):
+              for block in re.split(r'\n\s*\n', text):
+                  b = block.strip()
+                  if not b or b.startswith('#') or b.startswith('---'):
+                      continue
+                  b = re.sub(r'[*_`>#]', '', b).replace('\n', ' ').strip()
+                  return (b[:147] + '...') if len(b) > 150 else b
+              return ""
+
+          def humanize(p):
+              return re.sub(r'[-_]', ' ', os.path.splitext(os.path.basename(p))[0]).strip().title()
+
+          changed = total = 0
+          for path in glob.glob(os.path.join(root, '**', '*.md'), recursive=True):
+              total += 1
+              raw      = open(path, encoding="utf-8").read()
+              fm, body = split_frontmatter(raw)
+              rel      = os.path.relpath(path, root).replace(os.sep, '/')
+
+              new = {}
+              new["title"]        = fm.get("title") or title_map.get(rel) or first_h1(body) or humanize(path)
+              new[SUMMARY_FIELD]  = fm.get(SUMMARY_FIELD) or fm.get("summary") or fm.get("excerpt") or first_paragraph(body)
+              new["hidden"]       = fm.get("hidden", False)
+              # carry over any other keys, minus GitBook-only + already-placed ones
+              for k, v in fm.items():
+                  if k in STRIP_KEYS or k in ("title", "excerpt", "summary", "hidden"):
+                      continue
+                  new[k] = v
+
+              out = ("---\n"
+                     + yaml.dump(new, default_flow_style=False, allow_unicode=True,
+                                 sort_keys=False, width=4096)
+                     + "---\n\n" + body.lstrip("\n"))
+              if out != raw:
+                  open(path, "w", encoding="utf-8").write(out)
+                  changed += 1
+
+          print(f"Frontmatter normalized: {changed} of {total} pages changed "
+                f"(field='{SUMMARY_FIELD}')")
+          EOF
 
       - name: Generate _order.yaml files from SUMMARY.md
         run: |
@@ -66,44 +175,25 @@ jobs:
 
           if not os.path.exists(summary_path):
               print("No SUMMARY.md found, skipping _order.yaml generation")
-              exit(0)
+              raise SystemExit(0)
 
           with open(summary_path) as f:
               lines = f.readlines()
 
-          entry_re = re.compile(r'^\s*[\*\-\+]\s+\[.*?\]\((.*?)\)')
-
+          entry_re = re.compile(r'^\s*[\*\-]\s+\[.*?\]\((.*?)\)')
           folder_order = {}
-
-          def add_slug(folder, slug):
-              if folder not in folder_order:
-                  folder_order[folder] = []
-              if slug not in folder_order[folder]:
-                  folder_order[folder].append(slug)
 
           for line in lines:
               m = entry_re.match(line)
               if not m:
                   continue
               rel = m.group(1).strip()
-              rel = rel.lstrip('./')
               if not rel.endswith('.md'):
                   continue
-
-              parts = rel.split('/')
-
-              if len(parts) == 1:
-                  slug = parts[0].replace('.md', '')
-                  add_slug('', slug)
-              else:
-                  for depth in range(len(parts) - 1):
-                      parent_folder = '/'.join(parts[:depth]) if depth > 0 else ''
-                      child_slug = parts[depth]
-                      add_slug(parent_folder, child_slug)
-
-                  file_slug = parts[-1].replace('.md', '')
-                  file_folder = '/'.join(parts[:-1])
-                  add_slug(file_folder, file_slug)
+              parts  = rel.split('/')
+              folder = "" if len(parts) == 1 else "/".join(parts[:-1])
+              slug   = parts[-1].replace('.md', '')
+              folder_order.setdefault(folder, []).append(slug)
 
           for folder, slugs in folder_order.items():
               out_dir = os.path.join(output_root, folder) if folder else output_root
@@ -117,11 +207,11 @@ jobs:
       - name: Commit and push to readme
         run: |
           cd readme
-          git config user.name "github-actions[bot]"
+          git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add docs/Documentation/
           if git diff --staged --quiet; then
-            echo "No changes to commit - skipping."
+            echo "No changes to commit — skipping."
           else
             git commit -m "Sync from docs repo @ ${{ github.sha }}"
             git push origin v1.0
