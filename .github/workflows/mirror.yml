@@ -24,44 +24,6 @@ jobs:
           fetch-depth: 0                    # avoids shallow-push failures on divergence
           ssh-key: ${{ secrets.DEPLOY_KEY }}
 
-      - name: Detect summary field (excerpt vs summary)
-        run: |
-          # Decide which field ReadMe expects by inspecting the destination repo's
-          # existing pages BEFORE the sync overwrites anything. Result -> $GITHUB_ENV.
-          python3 - <<'EOF'
-          import os, re, glob
-
-          readme_root = "readme"
-          counts = {"summary": 0, "excerpt": 0}
-          for path in glob.glob(os.path.join(readme_root, "**", "*.md"), recursive=True):
-              raw = open(path, encoding="utf-8").read()
-              if not raw.lstrip().startswith("---"):
-                  continue
-              fm = raw.split("---", 2)[1]
-              for field in counts:
-                  if re.search(rf'^\s*{field}\s*:', fm, re.MULTILINE):
-                      counts[field] += 1
-
-          # Refactored signals: Refactored-only top-level folders, OR the presence
-          # of _order.yaml nav files (a Refactored bi-directional-sync construct).
-          refactored = (
-              any(os.path.isdir(os.path.join(readme_root, d))
-                  for d in ("custom_pages", "recipes", "reference"))
-              or bool(glob.glob(os.path.join(readme_root, "**", "_order.yaml"), recursive=True))
-          )
-
-          if counts["summary"] > counts["excerpt"]:
-              field = "summary"
-          elif counts["excerpt"] > counts["summary"]:
-              field = "excerpt"
-          else:
-              field = "summary" if refactored else "excerpt"
-
-          print(f"counts={counts} refactored={refactored} -> SUMMARY_FIELD={field}")
-          with open(os.environ["GITHUB_ENV"], "a") as f:
-              f.write(f"SUMMARY_FIELD={field}\n")
-          EOF
-
       - name: Sync docs → readme/docs/Documentation
         run: |
           mkdir -p readme/docs/Documentation
@@ -137,8 +99,13 @@ jobs:
 
           summary_path  = "docs/SUMMARY.md"
           root          = "readme/docs/Documentation"
-          # Field is auto-detected by the "Detect summary field" step above.
-          SUMMARY_FIELD = os.environ.get("SUMMARY_FIELD", "excerpt")
+          # ReadMe's File Format schema (Documentation Structure page) names the
+          # subtitle field `excerpt`. ReadMe's Bi-Directional Sync page calls it
+          # `summary`. The docs conflict, so we write `excerpt` (schema) AND mirror
+          # the same value to `summary` — identical value, can't render wrong either way.
+          # Once you confirm which one your site uses, set MIRROR_SUMMARY = False.
+          EXCERPT_FIELD  = "excerpt"
+          MIRROR_SUMMARY = True
           # GitBook-only frontmatter keys ReadMe doesn't consume — drop to keep it clean.
           STRIP_KEYS    = {"cover", "coverY", "coverYAdjust", "icon", "layout"}
 
@@ -186,12 +153,26 @@ jobs:
               rel      = os.path.relpath(path, root).replace(os.sep, '/')
 
               new = {}
-              new["title"]        = fm.get("title") or title_map.get(rel) or first_h1(body) or humanize(path)
-              new[SUMMARY_FIELD]  = fm.get(SUMMARY_FIELD) or fm.get("summary") or fm.get("excerpt") or first_paragraph(body)
-              new["hidden"]       = fm.get("hidden", False)
-              # carry over any other keys, minus GitBook-only + already-placed ones
+              new["title"]       = fm.get("title") or title_map.get(rel) or first_h1(body) or humanize(path)
+              sub                = fm.get("excerpt") or fm.get("summary") or first_paragraph(body)
+              new[EXCERPT_FIELD] = sub
+              if MIRROR_SUMMARY:
+                  new["summary"] = sub
+              new["hidden"]      = fm.get("hidden", False)
+
+              # SEO description lives under metadata.description per ReadMe's schema.
+              # Fold any GitBook top-level `description` into the metadata block,
+              # preserving an existing metadata block (e.g. keywords).
+              metadata = dict(fm.get("metadata") or {})
+              if fm.get("description") and "description" not in metadata:
+                  metadata["description"] = fm["description"]
+              if metadata:
+                  new["metadata"] = metadata
+
+              # carry over any other valid keys, minus GitBook-only + already-placed ones
               for k, v in fm.items():
-                  if k in STRIP_KEYS or k in ("title", "excerpt", "summary", "hidden"):
+                  if k in STRIP_KEYS or k in ("title", "excerpt", "summary",
+                                              "hidden", "description", "metadata"):
                       continue
                   new[k] = v
 
@@ -204,7 +185,7 @@ jobs:
                   changed += 1
 
           print(f"Frontmatter normalized: {changed} of {total} pages changed "
-                f"(field='{SUMMARY_FIELD}')")
+                f"(field='{EXCERPT_FIELD}', mirror_summary={MIRROR_SUMMARY})")
           EOF
 
       - name: Generate _order.yaml files from SUMMARY.md
