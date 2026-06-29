@@ -29,6 +29,8 @@ jobs:
         run: |
           rm -rf readme/docs/Documentation/.gitbook
           rm -rf readme/docs/Documentation/.github
+          rm -f  readme/docs/Documentation/SUMMARY.md
+          find readme/docs/Documentation -name '_order.yaml' -delete
 
       - name: Sync docs to readme/docs/Documentation
         run: |
