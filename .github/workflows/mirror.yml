@@ -12,7 +12,6 @@ jobs:
         with:
           path: docs
           fetch-depth: 0
-
       - name: Checkout readme (destination)
         uses: actions/checkout@v4
         with:
@@ -20,17 +19,33 @@ jobs:
           ref: v1.0
           path: readme
           ssh-key: ${{ secrets.DEPLOY_KEY }}
-
       - name: Sync docs → readme/docs/Documentation
         run: |
           mkdir -p readme/docs/Documentation
           rsync -av --delete docs/ readme/docs/Documentation/ --exclude='.git' --exclude='.github'
+      - name: Relocate .gitbook/assets → assets and rewrite references
+        run: |
+          cd readme/docs/Documentation
 
+          # Move assets out of the dot folder
+          if [ -d ".gitbook/assets" ]; then
+            mkdir -p assets
+            # copy contents (handles existing files); then drop the dot folder
+            cp -a .gitbook/assets/. assets/
+            rm -rf .gitbook
+          fi
+
+          # Rewrite all references in markdown files.
+          # Handles ".gitbook/assets", "./.gitbook/assets", and any "../.gitbook/assets" depth.
+          find . -type f -name '*.md' -print0 | xargs -0 --no-run-if-empty sed -i -E \
+            -e 's#(\.\./)+\.gitbook/assets#assets#g' \
+            -e 's#\./\.gitbook/assets#assets#g' \
+            -e 's#\.gitbook/assets#assets#g'
       - name: Commit and push to readme
         run: |
           cd readme
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add docs/Documentation/
-          git diff --staged --quiet || git commit -m "Sync from docs repo"
+          git diff --staged --quiet || git commit -m "Sync from docs repo" || true
           git push origin v1.0
