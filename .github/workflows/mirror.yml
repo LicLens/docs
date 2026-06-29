@@ -88,6 +88,48 @@ jobs:
             -e 's#\./\.gitbook/assets#assets#g' \
             -e 's#\.gitbook/assets#assets#g'
 
+      - name: Convert GitBook content macros → ReadMe syntax
+        run: |
+          python3 - <<'EOF'
+          import re, glob, os
+
+          root  = "readme/docs/Documentation"
+          EMOJI = {"info": "📘", "note": "📘", "warning": "🚧",
+                   "danger": "❗", "success": "👍"}
+
+          def convert(text):
+              # {% hint style="X" %} ... {% endhint %} -> ReadMe blockquote callout
+              def hint(m):
+                  style = (m.group(1) or "info").lower()
+                  emoji = EMOJI.get(style, "📘")
+                  body  = m.group(2).strip("\n").split("\n")
+                  quoted = "\n".join((f"> {ln}" if ln.strip() else ">") for ln in body)
+                  return f"> {emoji}\n>\n{quoted}"
+              text = re.sub(r'\{%\s*hint\s+style="([^"]+)"\s*%\}(.*?)\{%\s*endhint\s*%\}',
+                            hint, text, flags=re.DOTALL)
+              # {% code ... %} ```...``` {% endcode %} -> keep fenced code only
+              text = re.sub(r'\{%\s*code[^%]*%\}\s*\n(.*?)\n\{%\s*endcode\s*%\}',
+                            lambda m: m.group(1), text, flags=re.DOTALL)
+              # {% content-ref url="X" %} [..](..) {% endcontent-ref %} -> plain md link
+              text = re.sub(r'\{%\s*content-ref[^%]*%\}\s*(.*?)\s*\{%\s*endcontent-ref\s*%\}',
+                            lambda m: m.group(1).strip(), text, flags=re.DOTALL)
+              # {% embed url="X" %} -> bare URL (ReadMe auto-embeds)
+              text = re.sub(r'\{%\s*embed\s+url="([^"]+)"\s*%\}', r'\1', text)
+              # strip remaining structural GitBook tags so nothing renders literally
+              text = re.sub(r'\{%\s*/?\s*(tabs|tab|endtab|endtabs|columns|column|'
+                            r'stepper|step|endstep|endstepper)[^%]*%\}', '', text)
+              return text
+
+          changed = 0
+          for path in glob.glob(os.path.join(root, '**', '*.md'), recursive=True):
+              raw = open(path, encoding="utf-8").read()
+              new = convert(raw)
+              if new != raw:
+                  open(path, "w", encoding="utf-8").write(new)
+                  changed += 1
+          print(f"GitBook macros converted in {changed} page(s)")
+          EOF
+
       - name: Inject / merge ReadMe frontmatter (title / summary / hidden)
         run: |
           python3 - <<'EOF'
