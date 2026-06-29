@@ -113,3 +113,4 @@ jobs:
             git commit -m "Sync from docs repo @ ${{ github.sha }}"
             git push origin v1.0
           fi
+# ↑
