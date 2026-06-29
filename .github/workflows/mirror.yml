@@ -71,24 +71,39 @@ jobs:
           with open(summary_path) as f:
               lines = f.readlines()
 
-          entry_re = re.compile(r'^\s*[\*\-]\s+\[.*?\]\((.*?)\)')
+          entry_re = re.compile(r'^\s*[\*\-\+]\s+\[.*?\]\((.*?)\)')
 
           folder_order = {}
+
+          def add_slug(folder, slug):
+              if folder not in folder_order:
+                  folder_order[folder] = []
+              if slug not in folder_order[folder]:
+                  folder_order[folder].append(slug)
 
           for line in lines:
               m = entry_re.match(line)
               if not m:
                   continue
               rel = m.group(1).strip()
+              rel = rel.lstrip('./')
               if not rel.endswith('.md'):
                   continue
+
               parts = rel.split('/')
+
               if len(parts) == 1:
-                  folder = ""
+                  slug = parts[0].replace('.md', '')
+                  add_slug('', slug)
               else:
-                  folder = "/".join(parts[:-1])
-              slug = parts[-1].replace('.md', '')
-              folder_order.setdefault(folder, []).append(slug)
+                  for depth in range(len(parts) - 1):
+                      parent_folder = '/'.join(parts[:depth]) if depth > 0 else ''
+                      child_slug = parts[depth]
+                      add_slug(parent_folder, child_slug)
+
+                  file_slug = parts[-1].replace('.md', '')
+                  file_folder = '/'.join(parts[:-1])
+                  add_slug(file_folder, file_slug)
 
           for folder, slugs in folder_order.items():
               out_dir = os.path.join(output_root, folder) if folder else output_root
