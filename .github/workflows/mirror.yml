@@ -22,8 +22,13 @@ jobs:
           repository: LicLens/readme
           ref: v1.0
           path: readme
-          fetch-depth: 0          # ← Added: avoids shallow-push failures
+          fetch-depth: 0
           ssh-key: ${{ secrets.DEPLOY_KEY }}
+
+      - name: Clean stale artifacts from destination
+        run: |
+          rm -rf readme/docs/Documentation/.gitbook
+          rm -rf readme/docs/Documentation/.github
 
       - name: Sync docs → readme/docs/Documentation
         run: |
@@ -31,86 +36,15 @@ jobs:
           rsync -av --delete \
             --exclude='.git' \
             --exclude='.github' \
+            --exclude='.gitbook' \
             --exclude='SUMMARY.md' \
-            docs/           readme/docs/Documentation/
-            # ↑ trailing slash on source = sync contents, not the folder itself
+            --exclude='_order.yaml' \
+            docs/  readme/docs/Documentation/
+          #  ↑ Also exclude any hand-crafted _order.yaml from source
+          #    so only the generated ones (below) are authoritative
 
       - name: Relocate .gitbook/assets → assets and rewrite references
         run: |
           cd readme/docs/Documentation
 
-          if [ -d ".gitbook/assets" ]; then
-            mkdir -p assets
-            cp -a .gitbook/assets/. assets/
-            rm -rf .gitbook
-          fi
-
-          # Rewrite all .gitbook/assets variants in markdown files
-          # Covers: .gitbook/assets, ./.gitbook/assets, ../../.gitbook/assets,
-          #         URL-encoded spaces (%20), and absolute /assets/ paths
-          find . -type f -name '*.md' -print0 | xargs -0 --no-run-if-empty sed -i -E \
-            -e 's#(\.\./)*\.gitbook/assets#assets#g' \
-            -e 's#\./\.gitbook/assets#assets#g' \
-            -e 's#\.gitbook/assets#assets#g'
-
-      - name: Generate _order.yaml from SUMMARY.md
-        run: |
-          python3 - <<'EOF'
-          import re, os, yaml
-
-          summary_path = "docs/SUMMARY.md"
-          output_root  = "readme/docs/Documentation"
-
-          if not os.path.exists(summary_path):
-              print("No SUMMARY.md found, skipping _order.yaml generation")
-              exit(0)
-
-          with open(summary_path) as f:
-              lines = f.readlines()
-
-          # Parse SUMMARY.md list items: "* [Title](path/to/file.md)"
-          entry_re = re.compile(r'^\s*[\*\-]\s+\[.*?\]\((.*?)\)')
-          
-          # Group slugs by their parent folder
-          folder_order: dict[str, list[str]] = {}
-
-          for line in lines:
-              m = entry_re.match(line)
-              if not m:
-                  continue
-              rel = m.group(1).strip()
-              if not rel.endswith('.md'):
-                  continue
-              parts = rel.split('/')
-              if len(parts) == 1:
-                  folder = "."
-              else:
-                  folder = "/".join(parts[:-1])
-              slug = parts[-1].replace('.md', '')
-              folder_order.setdefault(folder, []).append(slug)
-
-          # Write one _order.yaml per folder
-          for folder, slugs in folder_order.items():
-              out_dir = os.path.join(output_root, folder)
-              os.makedirs(out_dir, exist_ok=True)
-              out_path = os.path.join(out_dir, "_order.yaml")
-              with open(out_path, "w") as f:
-                  yaml.dump(slugs, f, default_flow_style=False, allow_unicode=True)
-              print(f"Wrote {out_path}: {slugs}")
-          EOF
-
-      - name: Commit and push to readme
-        run: |
-          cd readme
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/Documentation/
-          
-          # Only commit if there are actual staged changes
-          if git diff --staged --quiet; then
-            echo "No changes to commit — skipping."
-          else
-            git commit -m "Sync from docs repo @ ${{ github.sha }}"
-            git push origin v1.0
-          fi
-# ↑
+          if [ -d ".gitbook/assets" ];
