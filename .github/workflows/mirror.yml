@@ -1,81 +1,276 @@
-- name: Generate _order.yaml files from SUMMARY.md
+name: Mirror to readme.com repo
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout docs (source)
+        uses: actions/checkout@v4
+        with:
+          path: docs
+          fetch-depth: 0
+
+      - name: Checkout readme (destination)
+        uses: actions/checkout@v4
+        with:
+          repository: LicLens/readme
+          ref: v1.0
+          path: readme
+          fetch-depth: 0                    # avoids shallow-push failures on divergence
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
+
+      - name: Sync docs → readme/docs/Documentation
+        run: |
+          mkdir -p readme/docs/Documentation
+          # Trailing slash on source = copy CONTENTS, not the folder itself.
+          # Exclude SUMMARY.md (ReadMe ignores it; we convert it to _order.yaml below).
+          rsync -av --delete \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='SUMMARY.md' \
+            docs/ readme/docs/Documentation/
+
+      - name: Relocate .gitbook/assets → assets and rewrite references
+        run: |
+          cd readme/docs/Documentation
+          if [ -d ".gitbook/assets" ]; then
+            mkdir -p assets
+            cp -a .gitbook/assets/. assets/
+            rm -rf .gitbook
+          fi
+          # Rewrite every .gitbook/assets variant in markdown:
+          # .gitbook/assets, ./.gitbook/assets, and any ../ depth.
+          find . -type f -name '*.md' -print0 | xargs -0 --no-run-if-empty sed -i -E \
+            -e 's#(\.\./)*\.gitbook/assets#assets#g' \
+            -e 's#\./\.gitbook/assets#assets#g' \
+            -e 's#\.gitbook/assets#assets#g'
+
+      - name: Convert GitBook content macros → ReadMe MDX (Callouts, etc.)
+        run: |
+          python3 - <<'EOF'
+          import re, glob, os
+
+          root  = "readme/docs/Documentation"
+          # GitBook hint style -> (ReadMe Callout theme, Font Awesome icon). No emoji.
+          THEME = {
+              "info":    ("info",    "fa-circle-info"),
+              "note":    ("default", "fa-circle-info"),
+              "tip":     ("okay",    "fa-circle-check"),
+              "success": ("okay",    "fa-circle-check"),
+              "warning": ("warn",    "fa-triangle-exclamation"),
+              "danger":  ("error",   "fa-circle-exclamation"),
+          }
+
+          def convert(text):
+              # {% hint style="X" %} ... {% endhint %} -> ReadMe <Callout> (MDX, FA icon)
+              def hint(m):
+                  style = (m.group(1) or "info").lower()
+                  theme, icon = THEME.get(style, ("default", "fa-circle-info"))
+                  body = m.group(2).strip("\n")
+                  # blank lines around body so MDX parses it as markdown blocks
+                  return f'<Callout icon="{icon}" theme="{theme}">\n\n{body}\n\n</Callout>'
+              text = re.sub(r'\{%\s*hint\s+style="([^"]+)"\s*%\}(.*?)\{%\s*endhint\s*%\}',
+                            hint, text, flags=re.DOTALL)
+              # {% code ... %} ```...``` {% endcode %} -> keep fenced code only
+              text = re.sub(r'\{%\s*code[^%]*%\}\s*\n(.*?)\n\{%\s*endcode\s*%\}',
+                            lambda m: m.group(1), text, flags=re.DOTALL)
+              # {% content-ref url="X" %} [..](..) {% endcontent-ref %} -> plain md link
+              text = re.sub(r'\{%\s*content-ref[^%]*%\}\s*(.*?)\s*\{%\s*endcontent-ref\s*%\}',
+                            lambda m: m.group(1).strip(), text, flags=re.DOTALL)
+              # {% embed url="X" %} -> bare URL (ReadMe auto-embeds)
+              text = re.sub(r'\{%\s*embed\s+url="([^"]+)"\s*%\}', r'\1', text)
+              # strip remaining structural GitBook tags so nothing renders literally
+              text = re.sub(r'\{%\s*/?\s*(tabs|tab|endtab|endtabs|columns|column|'
+                            r'stepper|step|endstep|endstepper)[^%]*%\}', '', text)
+              # remove .md extension from internal links (ReadMe links by slug);
+              # keep #anchors, link titles, external URLs and non-.md assets intact
+              def strip_md(m):
+                  pre, target, post = m.group(1), m.group(2), m.group(3)
+                  if re.match(r'^[a-z][a-z0-9+.\-]*:', target, re.I) or target.startswith('#'):
+                      return m.group(0)
+                  path, sep, anchor = target.partition('#')
+                  if path.endswith('.md'):
+                      path = path[:-3]
+                  return f'{pre}{path}{sep}{anchor}{post}'
+              text = re.sub(r'(\]\()([^)\s]+)((?:\s+"[^"]*")?\))', strip_md, text)
+              return text
+
+          changed = 0
+          for path in glob.glob(os.path.join(root, '**', '*.md'), recursive=True):
+              raw = open(path, encoding="utf-8").read()
+              new = convert(raw)
+              if new != raw:
+                  open(path, "w", encoding="utf-8").write(new)
+                  changed += 1
+          print(f"GitBook macros converted in {changed} page(s)")
+          EOF
+
+      - name: Inject / merge ReadMe frontmatter (title / summary / hidden)
+        run: |
+          python3 - <<'EOF'
+          import os, re, glob, yaml
+
+          summary_path  = "docs/SUMMARY.md"
+          root          = "readme/docs/Documentation"
+          # ReadMe's File Format schema (Documentation Structure page) names the
+          # subtitle field `excerpt`. ReadMe's Bi-Directional Sync page calls it
+          # `summary`. The docs conflict, so we write `excerpt` (schema) AND mirror
+          # the same value to `summary` — identical value, can't render wrong either way.
+          # Once you confirm which one your site uses, set MIRROR_SUMMARY = False.
+          EXCERPT_FIELD  = "excerpt"
+          MIRROR_SUMMARY = True
+          # GitBook-only frontmatter keys ReadMe doesn't consume — drop to keep it clean.
+          STRIP_KEYS    = {"cover", "coverY", "coverYAdjust", "icon", "layout"}
+
+          title_map = {}
+          if os.path.exists(summary_path):
+              link_re = re.compile(r'\[([^\]]+)\]\(([^)]+\.md)\)')
+              for line in open(summary_path, encoding="utf-8"):
+                  m = link_re.search(line)
+                  if m:
+                      title_map[m.group(2).strip().lstrip("./")] = m.group(1).strip()
+
+          def split_frontmatter(raw):
+              if raw.lstrip().startswith('---'):
+                  m = re.match(r'^\s*---\s*\n(.*?)\n---\s*\n?(.*)$', raw, re.DOTALL)
+                  if m:
+                      try:
+                          data = yaml.safe_load(m.group(1)) or {}
+                      except yaml.YAMLError:
+                          data = {}
+                      if isinstance(data, dict):
+                          return data, m.group(2)
+              return {}, raw
+
+          def first_h1(text):
+              m = re.search(r'^\s*#\s+(.+?)\s*$', text, re.MULTILINE)
+              return m.group(1).strip() if m else None
+
+          def first_paragraph(text):
+              for block in re.split(r'\n\s*\n', text):
+                  b = block.strip()
+                  if not b or b.startswith('#') or b.startswith('---'):
+                      continue
+                  b = re.sub(r'[*_`>#]', '', b).replace('\n', ' ').strip()
+                  return (b[:147] + '...') if len(b) > 150 else b
+              return ""
+
+          def humanize(p):
+              return re.sub(r'[-_]', ' ', os.path.splitext(os.path.basename(p))[0]).strip().title()
+
+          changed = total = 0
+          for path in glob.glob(os.path.join(root, '**', '*.md'), recursive=True):
+              total += 1
+              raw      = open(path, encoding="utf-8").read()
+              fm, body = split_frontmatter(raw)
+              rel      = os.path.relpath(path, root).replace(os.sep, '/')
+
+              new = {}
+              new["title"]       = fm.get("title") or title_map.get(rel) or first_h1(body) or humanize(path)
+              sub                = fm.get("excerpt") or fm.get("summary") or first_paragraph(body)
+              new[EXCERPT_FIELD] = sub
+              if MIRROR_SUMMARY:
+                  new["summary"] = sub
+              new["hidden"]      = fm.get("hidden", False)
+
+              # SEO description lives under metadata.description per ReadMe's schema.
+              # Fold any GitBook top-level `description` into the metadata block,
+              # preserving an existing metadata block (e.g. keywords).
+              metadata = dict(fm.get("metadata") or {})
+              if fm.get("description") and "description" not in metadata:
+                  metadata["description"] = fm["description"]
+              if metadata:
+                  new["metadata"] = metadata
+
+              # carry over any other valid keys, minus GitBook-only + already-placed ones
+              for k, v in fm.items():
+                  if k in STRIP_KEYS or k in ("title", "excerpt", "summary",
+                                              "hidden", "description", "metadata"):
+                      continue
+                  new[k] = v
+
+              out = ("---\n"
+                     + yaml.dump(new, default_flow_style=False, allow_unicode=True,
+                                 sort_keys=False, width=4096)
+                     + "---\n\n" + body.lstrip("\n"))
+              if out != raw:
+                  open(path, "w", encoding="utf-8").write(out)
+                  changed += 1
+
+          print(f"Frontmatter normalized: {changed} of {total} pages changed "
+                f"(field='{EXCERPT_FIELD}', mirror_summary={MIRROR_SUMMARY})")
+          EOF
+
+      - name: Generate _order.yaml files from SUMMARY.md
         run: |
           python3 - <<'EOF'
           import re, os, yaml
+          from collections import OrderedDict
 
           summary_path = "docs/SUMMARY.md"
-          output_root  = "readme/docs/Documentation"
+          root         = "readme/docs/Documentation"
 
           if not os.path.exists(summary_path):
               print("No SUMMARY.md found, skipping _order.yaml generation")
-              exit(0)
+              raise SystemExit(0)
 
-          with open(summary_path) as f:
-              lines = f.readlines()
+          # Build an ordered child list for every folder by walking each link's
+          # path components, so sub-category order (not just leaf pages) is captured.
+          entry_re = re.compile(r'^(\s*)[\*\-]\s+\[.*?\]\((.*?)\)')
+          children = OrderedDict()   # parent rel-path ('' = root) -> ordered child names
 
-          entry_re = re.compile(r'^\s*[\*\-\+]\s+\[.*?\]\((.*?)\)')
+          def register(parent, name):
+              children.setdefault(parent, [])
+              if name not in children[parent]:
+                  children[parent].append(name)
 
-          folder_order = {}
-
-          def add_slug(folder, slug):
-              if folder not in folder_order:
-                  folder_order[folder] = []
-              if slug not in folder_order[folder]:
-                  folder_order[folder].append(slug)
-
-          for line in lines:
+          for line in open(summary_path, encoding="utf-8"):
               m = entry_re.match(line)
               if not m:
                   continue
-              rel = m.group(1).strip()
-              rel = rel.lstrip('./')
-              if not rel.endswith('.md'):
+              rel = m.group(2).strip().lstrip("./")
+              if not rel.endswith(".md"):
                   continue
+              parts = rel.split("/")
+              for i in range(len(parts)):
+                  parent = "/".join(parts[:i])           # '' at root
+                  name   = parts[i]
+                  if name.endswith(".md"):
+                      name = name[:-3]                    # page slug
+                  register(parent, name)
 
-              parts = rel.split('/')
+          written = 0
+          for parent, kids in children.items():
+              out_dir = os.path.join(root, parent) if parent else root
+              if not os.path.isdir(out_dir):
+                  continue
+              # README (index page) leads its folder — incl. the root Welcome page.
+              has_readme = os.path.exists(os.path.join(out_dir, "README.md"))
+              ordered = (["README"] if has_readme else []) + \
+                        [k for k in kids if k != "README"]
+              with open(os.path.join(out_dir, "_order.yaml"), "w", encoding="utf-8") as f:
+                  yaml.dump(ordered, f, default_flow_style=False,
+                            sort_keys=False, allow_unicode=True)
+              written += 1
+              print(f"  {parent or '(root)'}/_order.yaml -> {ordered}")
 
-              if len(parts) == 1:
-                  slug = parts[0].replace('.md', '')
-                  add_slug('', slug)
-              else:
-                  for depth in range(len(parts) - 1):
-                      parent_folder = '/'.join(parts[:depth]) if depth > 0 else ''
-                      child_slug = parts[depth]
-                      add_slug(parent_folder, child_slug)
-
-                  file_slug = parts[-1].replace('.md', '')
-                  file_folder = '/'.join(parts[:-1])
-                  add_slug(file_folder, file_slug)
-
-          # --- Manual overrides for specific ordering requirements ---
-
-          # Root level: README first, then category folders in desired order
-          folder_order[''] = ['README', 'getting-started', 'reports',
-                              'msp', 'dashboards', 'known-problems']
-
-          # getting-started: README first, then subfolders in desired order
-          if 'getting-started' in folder_order:
-              folder_order['getting-started'] = [
-                  'README',
-                  'understanding-the-basics',
-                  '365tunes-ai-agent',
-                  'baseline-drift-analysis',
-                  'management-and-automation',
-                  'security-and-compliance',
-                  'sharepoint',
-              ]
-
-          # msp: ensure gdap-support-articles shows correctly
-          if 'msp' in folder_order:
-              folder_order['msp'] = ['gdap-support-articles']
-
-          # --- Write files ---
-
-          for folder, slugs in folder_order.items():
-              out_dir = os.path.join(output_root, folder) if folder else output_root
-              os.makedirs(out_dir, exist_ok=True)
-              out_path = os.path.join(out_dir, "_order.yaml")
-              with open(out_path, "w") as f:
-                  yaml.dump(slugs, f, default_flow_style=False, allow_unicode=True)
-              print(f"Wrote {out_path}: {slugs}")
+          print(f"_order.yaml written for {written} folder(s)")
           EOF
+
+      - name: Commit and push to readme
+        run: |
+          cd readme
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/Documentation/
+          if git diff --staged --quiet; then
+            echo "No changes to commit — skipping."
+          else
+            git commit -m "Sync from docs repo @ ${{ github.sha }}"
+            git push origin v1.0
+          fi
