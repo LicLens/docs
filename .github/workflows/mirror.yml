@@ -50,6 +50,39 @@ jobs:
             -e 's#\./\.gitbook/assets#assets#g' \
             -e 's#\.gitbook/assets#assets#g'
 
+      - name: Relocate root README into getting-started
+        run: |
+          python3 - <<'EOF'
+          import os, re
+
+          root = "readme/docs/Documentation"
+          src  = os.path.join(root, "README.md")
+          if not os.path.exists(src):
+              print("No root README.md to relocate")
+              raise SystemExit(0)
+
+          text = open(src, encoding="utf-8").read()
+
+          # README moves one level deeper (Documentation/ -> Documentation/getting-started/),
+          # so re-relativize its internal links to resolve from the new location.
+          def fix(m):
+              pre, target, post = m.group(1), m.group(2), m.group(3)
+              if re.match(r'^[a-z][a-z0-9+.\-]*:', target, re.I) or target.startswith('#'):
+                  return m.group(0)
+              path, sep, anchor = target.partition('#')
+              if not path:
+                  return m.group(0)
+              newpath = os.path.relpath(os.path.normpath(path), "getting-started").replace(os.sep, "/")
+              return f'{pre}{newpath}{sep}{anchor}{post}'
+          text = re.sub(r'(\]\()([^)\s]+)((?:\s+"[^"]*")?\))', fix, text)
+
+          dest_dir = os.path.join(root, "getting-started")
+          os.makedirs(dest_dir, exist_ok=True)
+          open(os.path.join(dest_dir, "README.md"), "w", encoding="utf-8").write(text)
+          os.remove(src)
+          print("Relocated README.md -> getting-started/README.md (links re-relativized)")
+          EOF
+
       - name: Convert GitBook content macros → ReadMe MDX (Callouts, etc.)
         run: |
           python3 - <<'EOF'
