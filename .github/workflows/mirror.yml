@@ -144,29 +144,41 @@ jobs:
           print(f"Rewrote README links in {changed} page(s)")
           EOF
 
-      # ── FIX ─────────────────────────────────────────────────────────────────
-      # Make each folder's FIRST document (in SUMMARY.md order) its landing page.
-      # For every folder that does NOT already have an index.md (i.e. had no
-      # README and none was relocated there), promote its first child page to
-      # index.md: rename first-child.md -> index.md and rewrite every link that
-      # pointed at it. This gives each category a real, content-rich landing page
-      # instead of an empty stub, matching the getting-started behaviour.
+      # ── FIX (Option B) ───────────────────────────────────────────────────────
+      # When a category is clicked, show its FIRST article's content — WITHOUT
+      # removing that article as its own sidebar entry. For every folder that has
+      # no index.md yet, we COPY the first child's body into a new index.md and
+      # give that index a DISTINCT, folder-derived title (e.g. "Understanding the
+      # Basics"). The first article stays in place under its own title.
       #
-      # Runs AFTER README->index (so author-provided/README landing pages win) and
-      # BEFORE macro/frontmatter/_order steps (so the promoted page is processed
-      # and ordered like any other page).
-      - name: Promote first document to index.md for folders without one
+      # Distinct titles matter: a category index and its first article sharing a
+      # title/slug is exactly what caused the original 404s, so the copy is
+      # re-titled, never a verbatim duplicate of the child's frontmatter.
+      #
+      # Runs AFTER README->index (author/README landing pages win) and BEFORE the
+      # macro/frontmatter/_order steps (so the new index is processed normally).
+      - name: Fill empty category landing (index.md) from first article (content copy)
         run: |
           python3 - <<'EOF'
-          import os, re, glob
+          import os, re
           from collections import OrderedDict
 
           summary_path = "docs/SUMMARY.md"
           root         = "readme/docs/Documentation"
 
-          # Build, per folder, the ordered list of its DIRECT child .md pages from
-          # SUMMARY.md. README.md was already renamed to index.md upstream, so map
-          # those entries accordingly when reading SUMMARY.
+          def humanize(s):
+              return re.sub(r'[-_]', ' ', s).strip().title() or "Overview"
+
+          def strip_frontmatter(raw):
+              # Return body only (drop any leading --- ... --- block); the category
+              # index gets its OWN frontmatter/title injected downstream.
+              if raw.lstrip().startswith('---'):
+                  m = re.match(r'^\s*---\s*\n.*?\n---\s*\n?(.*)$', raw, re.DOTALL)
+                  if m:
+                      return m.group(1)
+              return raw
+
+          # First DIRECT child page per folder, in SUMMARY.md order.
           entry_re = re.compile(r'^(\s*)[\*\-]\s+\[.*?\]\((.*?)\)')
           first_child = OrderedDict()   # folder rel-path -> first direct child basename (no .md)
 
@@ -183,32 +195,13 @@ jobs:
                   if len(parts) < 2:
                       continue                      # root-level page, not in a folder
                   folder = "/".join(parts[:-1])
-                  name   = parts[-1][:-3]           # strip .md
+                  name   = parts[-1][:-3]
                   if name == "index":
-                      continue                      # already a landing page entry
-                  # record the FIRST non-index child seen for this folder
+                      continue
                   if folder not in first_child:
                       first_child[folder] = name
 
-          link_re = re.compile(r'(\]\()([^)\s]+)((?:\s+"[^"]*")?\))')
-          def rewrite_links(text, old_slug, folder):
-              # Rewrite links that resolve to <folder>/<old_slug>(.md) -> <folder>/index
-              # We match the basename component; ReadMe links by slug so dropping the
-              # leaf to "index" is sufficient. Preserve #anchors, titles, externals.
-              def fix(m):
-                  pre, target, post = m.group(1), m.group(2), m.group(3)
-                  if re.match(r'^[a-z][a-z0-9+.\-]*:', target, re.I) or target.startswith('#'):
-                      return m.group(0)
-                  path, sep, anchor = target.partition('#')
-                  base = os.path.basename(path)
-                  if base in (old_slug, old_slug + ".md"):
-                      newpath = re.sub(r'(^|/)' + re.escape(base) + r'$',
-                                       lambda mm: f'{mm.group(1)}index', path)
-                      return f'{pre}{newpath}{sep}{anchor}{post}'
-                  return m.group(0)
-              return link_re.sub(fix, text)
-
-          promoted = []
+          filled = []
           for folder, child in first_child.items():
               fdir = os.path.join(root, folder)
               if not os.path.isdir(fdir):
@@ -218,22 +211,18 @@ jobs:
               src = os.path.join(fdir, child + ".md")
               if not os.path.exists(src):
                   continue
-              os.rename(src, os.path.join(fdir, "index.md"))
-              promoted.append((folder, child))
+              body = strip_frontmatter(open(src, encoding="utf-8").read()).lstrip("\n")
+              # Give the category index a distinct, folder-derived title so it does
+              # NOT collide with the first article's slug. excerpt/summary left for
+              # the frontmatter step to derive from the copied body.
+              title = humanize(os.path.basename(folder))
+              index = (f"---\ntitle: {title}\nhidden: false\n---\n\n{body}")
+              open(os.path.join(fdir, "index.md"), "w", encoding="utf-8").write(index)
+              filled.append((folder, child))
 
-          # Rewrite links across ALL pages for every promotion performed.
-          if promoted:
-              for path in glob.glob(os.path.join(root, '**', '*.md'), recursive=True):
-                  raw = open(path, encoding="utf-8").read()
-                  new = raw
-                  for folder, child in promoted:
-                      new = rewrite_links(new, child, folder)
-                  if new != raw:
-                      open(path, "w", encoding="utf-8").write(new)
-
-          for folder, child in promoted:
-              print(f"  promoted {folder}/{child}.md -> {folder}/index.md")
-          print(f"First-document landing pages created in {len(promoted)} folder(s)")
+          for folder, child in filled:
+              print(f"  category landing {folder}/index.md <- copied from {child}.md (child kept)")
+          print(f"Category landing pages filled from first article in {len(filled)} folder(s)")
           EOF
 
       - name: Convert GitBook content macros → ReadMe MDX (Callouts, etc.)
