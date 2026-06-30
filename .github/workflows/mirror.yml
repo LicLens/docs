@@ -24,17 +24,127 @@ jobs:
           fetch-depth: 0                    # avoids shallow-push failures on divergence
           ssh-key: ${{ secrets.DEPLOY_KEY }}
 
-      - name: Sync docs → readme/docs/Documentation
+      # ── DELTA ────────────────────────────────────────────────────────────────
+      # Work out what actually changed in this push so downstream steps only
+      # reprocess the affected files and their folders — not the whole tree.
+      #   CHANGED_FILES   : added/modified docs (paths relative to docs/, NUL-safe list)
+      #   DELETED_FILES   : docs removed in this push (relative to docs/)
+      #   CHANGED_DIRS    : Documentation-relative folders touched (for _order/landing)
+      #   SUMMARY_CHANGED : 'true' if SUMMARY.md changed -> regenerate ALL _order.yaml
+      #   FULL_SYNC       : 'true' on first run / non-diffable push -> process everything
+      # Lists are written to files under $RUNNER_TEMP to stay NUL-safe and avoid
+      # env-size limits; flags go to $GITHUB_ENV.
+      - name: Compute changed/deleted docs (delta)
+        run: |
+          cd docs
+          BEFORE="${{ github.event.before }}"
+          AFTER="${{ github.sha }}"
+          TMP="$RUNNER_TEMP"
+          : > "$TMP/changed.txt"
+          : > "$TMP/deleted.txt"
+
+          full_sync() {
+            echo "FULL_SYNC=true"   >> "$GITHUB_ENV"
+            echo "SUMMARY_CHANGED=true" >> "$GITHUB_ENV"
+            # List every tracked doc (excludes are applied at sync time).
+            git ls-files -z > "$TMP/changed.txt"
+            echo "Delta: FULL SYNC (no usable previous SHA)"
+          }
+
+          # github.event.before is all-zeros on first push to a branch / forced cases.
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ] \
+             || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            full_sync
+          else
+            # Added (A), Copied (C), Modified (M), Renamed (R) -> need (re)processing.
+            # Deleted (D) -> remove from mirror. Use -z for NUL-safe paths.
+            git diff --name-only --diff-filter=ACMR -z "$BEFORE" "$AFTER" > "$TMP/changed.txt"
+            git diff --name-only --diff-filter=D  -z "$BEFORE" "$AFTER" > "$TMP/deleted.txt"
+
+            if [ ! -s "$TMP/changed.txt" ] && [ ! -s "$TMP/deleted.txt" ]; then
+              echo "FULL_SYNC=false" >> "$GITHUB_ENV"
+              echo "SUMMARY_CHANGED=false" >> "$GITHUB_ENV"
+              echo "Delta: no doc changes detected"
+            else
+              echo "FULL_SYNC=false" >> "$GITHUB_ENV"
+              if git diff --name-only "$BEFORE" "$AFTER" | grep -qx 'SUMMARY.md'; then
+                echo "SUMMARY_CHANGED=true" >> "$GITHUB_ENV"
+              else
+                echo "SUMMARY_CHANGED=false" >> "$GITHUB_ENV"
+              fi
+            fi
+          fi
+
+          echo "CHANGED_LIST=$TMP/changed.txt" >> "$GITHUB_ENV"
+          echo "DELETED_LIST=$TMP/deleted.txt" >> "$GITHUB_ENV"
+
+          echo "=== changed (added/modified/renamed) ==="
+          tr '\0' '\n' < "$TMP/changed.txt" || true
+          echo "=== deleted ==="
+          tr '\0' '\n' < "$TMP/deleted.txt" || true
+
+      - name: Sync changed docs → readme/docs/Documentation (delta)
         run: |
           mkdir -p readme/docs/Documentation
-          # Trailing slash on source = copy CONTENTS, not the folder itself.
-          # Exclude SUMMARY.md (ReadMe ignores it; we convert it to _order.yaml below).
-          rsync -av --delete \
-            --exclude='.git' \
-            --exclude='.github' \
-            --exclude='.DS_Store' \
-            --exclude='SUMMARY.md' \
-            docs/ readme/docs/Documentation/
+          DEST="readme/docs/Documentation"
+
+          if [ "${FULL_SYNC}" = "true" ]; then
+            # First run / non-diffable: full mirror. Trailing slash = copy CONTENTS.
+            # Note: NO --delete here; deletions are handled explicitly below so a
+            # full re-run never nukes generated index/_order files mid-pipeline.
+            rsync -av \
+              --exclude='.git' \
+              --exclude='.github' \
+              --exclude='.DS_Store' \
+              --exclude='SUMMARY.md' \
+              docs/ "$DEST/"
+          else
+            # Copy only changed/added files, preserving their relative paths.
+            # rsync --files-from reads a NUL-separated list; --from0 enables that.
+            # We feed it the changed list with SUMMARY.md / VCS noise filtered out.
+            tr '\0' '\n' < "$CHANGED_LIST" \
+              | grep -v -e '^SUMMARY.md$' -e '^\.git' -e '\.DS_Store$' \
+              | tr '\n' '\0' > "$RUNNER_TEMP/changed.sync"
+            if [ -s "$RUNNER_TEMP/changed.sync" ]; then
+              rsync -av --from0 --files-from="$RUNNER_TEMP/changed.sync" \
+                docs/ "$DEST/"
+            else
+              echo "No content files to copy (only deletions / SUMMARY change)."
+            fi
+          fi
+
+      # ── DELTA: deletions ─────────────────────────────────────────────────────
+      # Remove from the mirror anything deleted in the source. A GitBook README.md
+      # was relocated to index.md in the mirror, so map deleted README.md -> index.md.
+      # Done against the git index so the removal is committed at the end.
+      - name: Apply deletions to mirror (delta)
+        if: ${{ env.FULL_SYNC != 'true' }}
+        run: |
+          DEST="readme/docs/Documentation"
+          if [ ! -s "$DELETED_LIST" ]; then
+            echo "No deletions to apply."
+            exit 0
+          fi
+          cd readme
+          # Read NUL-separated deleted paths; translate and remove from index+tree.
+          while IFS= read -r -d '' rel; do
+            case "$rel" in
+              SUMMARY.md|.git*|*.DS_Store) continue ;;
+            esac
+            # README.md -> index.md mapping (root README went to getting-started/).
+            mapped="$rel"
+            case "$rel" in
+              README.md)            mapped="getting-started/index.md" ;;
+              */README.md)          mapped="${rel%README.md}index.md" ;;
+            esac
+            target="docs/Documentation/$mapped"
+            if [ -e "$target" ]; then
+              git rm -f --quiet --ignore-unmatch "$target" || rm -f "$target"
+              echo "  deleted: $mapped"
+            else
+              echo "  (already absent): $mapped"
+            fi
+          done < "../$DELETED_LIST"
 
       - name: Relocate .gitbook/assets → assets and rewrite references
         run: |
@@ -46,10 +156,17 @@ jobs:
           fi
           # Rewrite every .gitbook/assets variant in markdown:
           # .gitbook/assets, ./.gitbook/assets, and any ../ depth.
-          find . -type f -name '*.md' -print0 | xargs -0 --no-run-if-empty sed -i -E \
+          # Delta: only rewrite files that changed this run (full tree on FULL_SYNC).
+          if [ "${FULL_SYNC}" = "true" ]; then
+            find . -type f -name '*.md' -print0
+          else
+            tr '\0' '\n' < "$CHANGED_LIST" | grep -e '\.md$' \
+              | sed 's#^#./#' | tr '\n' '\0'
+          fi | xargs -0 --no-run-if-empty sed -i -E \
             -e 's#(\.\./)*\.gitbook/assets#assets#g' \
             -e 's#\./\.gitbook/assets#assets#g' \
             -e 's#\.gitbook/assets#assets#g'
+
 
       - name: Relocate root README into getting-started as landing page (index)
         run: |
@@ -231,6 +348,29 @@ jobs:
           import re, glob, os
 
           root  = "readme/docs/Documentation"
+
+          # Delta: process only changed .md files (full tree on FULL_SYNC). The
+          # changed list is source-relative; map to mirror paths (README->index).
+          def target_md_files():
+              if os.environ.get("FULL_SYNC") == "true":
+                  return glob.glob(os.path.join(root, '**', '*.md'), recursive=True)
+              listing = os.environ.get("CHANGED_LIST")
+              out = []
+              if listing and os.path.exists(listing):
+                  data = open(listing, "rb").read().split(b"\0")
+                  for raw in data:
+                      rel = raw.decode("utf-8", "ignore").strip()
+                      if not rel.endswith(".md") or rel == "SUMMARY.md":
+                          continue
+                      rel = re.sub(r'(^|/)README\.md$',
+                                   lambda mm: f'{mm.group(1)}index.md', rel)
+                      if rel == "index.md":          # root README -> getting-started
+                          rel = "getting-started/index.md"
+                      p = os.path.join(root, rel)
+                      if os.path.exists(p):
+                          out.append(p)
+              return out
+
           # GitBook hint style -> (ReadMe Callout theme, Font Awesome icon). No emoji.
           THEME = {
               "info":    ("info",    "fa-circle-info"),
@@ -276,7 +416,7 @@ jobs:
               return text
 
           changed = 0
-          for path in glob.glob(os.path.join(root, '**', '*.md'), recursive=True):
+          for path in target_md_files():
               raw = open(path, encoding="utf-8").read()
               new = convert(raw)
               if new != raw:
@@ -360,7 +500,33 @@ jobs:
                   return humanize(os.path.basename(d))
               return "Overview"
 
-          # First pass: decide each page's title.
+          # Delta: which mirror-relative pages changed this run? We still READ the
+          # whole tree (title de-dup must be global to prevent slug collisions —
+          # the original 404 cause), but only WRITE pages that changed, plus any
+          # page whose title we had to alter to resolve a collision.
+          FULL = os.environ.get("FULL_SYNC") == "true"
+          changed_rel = set()
+          if not FULL:
+              listing = os.environ.get("CHANGED_LIST")
+              if listing and os.path.exists(listing):
+                  for raw in open(listing, "rb").read().split(b"\0"):
+                      rel = raw.decode("utf-8", "ignore").strip()
+                      if not rel.endswith(".md") or rel == "SUMMARY.md":
+                          continue
+                      rel = re.sub(r'(^|/)README\.md$',
+                                   lambda mm: f'{mm.group(1)}index.md', rel)
+                      if rel == "index.md":
+                          rel = "getting-started/index.md"
+                      changed_rel.add(rel)
+              # Index/landing pages created this run (first-article copy, stubs) won't
+              # be in git's changed list yet — include any index.md whose folder was
+              # touched so freshly-built landings get frontmatter too.
+              touched_dirs = {os.path.dirname(r) for r in changed_rel}
+              for d in list(touched_dirs):
+                  idx = (d + "/index.md") if d else "index.md"
+                  changed_rel.add(idx)
+
+          # First pass: decide each page's title (read EVERY page).
           pages = []   # (path, rel, fm, body, title, is_index)
           for path in glob.glob(os.path.join(root, '**', '*.md'), recursive=True):
               raw      = open(path, encoding="utf-8").read()
@@ -385,6 +551,9 @@ jobs:
 
           # Second pass: de-duplicate titles (ReadMe slug collisions). When two
           # pages resolve to the same title, qualify with their parent folder.
+          # Track which pages had their title changed by de-dup so we still write
+          # them even if their file content was otherwise untouched this run.
+          dedup_changed = set()
           seen = {}
           for entry in pages:
               t = entry[4]
@@ -397,6 +566,7 @@ jobs:
                   parent = os.path.basename(os.path.dirname(rel))
                   if parent:
                       entry[4] = f"{entry[4]} ({humanize(parent)})"
+                      dedup_changed.add(rel)
 
           # Final safety net: if any collision survives (e.g. same title, same
           # parent name in different trees), append a numeric suffix.
@@ -406,12 +576,19 @@ jobs:
               if key in final_seen:
                   final_seen[key] += 1
                   entry[4] = f"{entry[4]} {final_seen[key]}"
+                  dedup_changed.add(entry[1])
               else:
                   final_seen[key] = 1
 
-          changed = total = 0
+          changed = total = skipped = 0
           for path, rel, fm, body, title, is_index in pages:
               total += 1
+              # Delta gate: only rebuild pages that changed this run OR whose title
+              # we had to alter for collision-safety. Everything else is left as-is.
+              if not FULL and rel not in changed_rel and rel not in dedup_changed:
+                  skipped += 1
+                  continue
+
               new = {}
               new["title"]       = title
               sub                = fm.get("excerpt") or fm.get("summary") or first_paragraph(body)
@@ -442,8 +619,8 @@ jobs:
                   open(path, "w", encoding="utf-8").write(out)
                   changed += 1
 
-          print(f"Frontmatter normalized: {changed} of {total} pages changed "
-                f"(field='{EXCERPT_FIELD}', mirror_summary={MIRROR_SUMMARY})")
+          print(f"Frontmatter normalized: {changed} written, {skipped} skipped (delta), "
+                f"of {total} pages (field='{EXCERPT_FIELD}', mirror_summary={MIRROR_SUMMARY})")
           EOF
 
       # ── FIX ─────────────────────────────────────────────────────────────────
@@ -470,6 +647,31 @@ jobs:
                   if any(f.endswith(".md") for f in files):
                       return True
               return False
+
+          # Delta scope: which folders' _order.yaml may need rewriting. If SUMMARY.md
+          # changed (or FULL_SYNC), rewrite ALL; otherwise only folders touched this
+          # run, plus their parent chain (a new page can change a parent's child list)
+          # and root. Stubbing + completeness still run tree-wide (cheap dir walks),
+          # but _order.yaml WRITES are scoped to keep the commit tight.
+          FULL = os.environ.get("FULL_SYNC") == "true"
+          SUMMARY_CHANGED = os.environ.get("SUMMARY_CHANGED") == "true"
+          order_scope = None   # None => all folders
+          if not FULL and not SUMMARY_CHANGED:
+              order_scope = {""}   # always include root
+              def add_chain(rel):
+                  rel = re.sub(r'(^|/)README\.md$', lambda mm: f'{mm.group(1)}index.md', rel)
+                  d = os.path.dirname(rel)
+                  while True:
+                      order_scope.add(d)
+                      if not d:
+                          break
+                      d = os.path.dirname(d)
+              for env_list in (os.environ.get("CHANGED_LIST"), os.environ.get("DELETED_LIST")):
+                  if env_list and os.path.exists(env_list):
+                      for raw in open(env_list, "rb").read().split(b"\0"):
+                          r = raw.decode("utf-8", "ignore").strip()
+                          if r.endswith(".md") and r != "SUMMARY.md":
+                              add_chain(r)
 
           # 1) STUB: ensure every doc folder has an index.md (covers subfolder-only
           #    folders like `msp` and any folder with no README/SUMMARY entry).
@@ -538,7 +740,12 @@ jobs:
           #    then remaining children that actually exist on disk.
           INDEX_NAMES = ["index", "README"]
           written = 0
+          skipped_order = 0
           for parent, kids in children.items():
+              # Delta: skip folders outside the touched scope (unless full/summary).
+              if order_scope is not None and parent not in order_scope:
+                  skipped_order += 1
+                  continue
               out_dir = os.path.join(root, parent) if parent else root
               if not os.path.isdir(out_dir):
                   continue
@@ -554,7 +761,7 @@ jobs:
               written += 1
               print(f"  {parent or '(root)'}/_order.yaml -> {ordered}")
 
-          print(f"_order.yaml written for {written} folder(s)")
+          print(f"_order.yaml written for {written} folder(s); {skipped_order} skipped (delta scope)")
           EOF
 
       - name: Purge .DS_Store from readme repo
