@@ -167,6 +167,101 @@ jobs:
             -e 's#\./\.gitbook/assets#assets#g' \
             -e 's#\.gitbook/assets#assets#g'
 
+      # ── FIX: image filenames ──────────────────────────────────────────────────
+      # GitBook/Windows screenshot names contain spaces, zero-width characters
+      # (U+200B), and punctuation that ReadMe cannot resolve in an <img src> or
+      # ![](...) path, so images 404 even though the file is present. Sanitize the
+      # actual files in assets/ to URL-safe slugs and rewrite EVERY reference
+      # across ALL markdown (refs can live in pages that didn't change this push).
+      # Both the rename and the rewrite run tree-wide on purpose.
+      - name: Sanitize asset filenames and rewrite all image references
+        run: |
+          python3 - <<'EOF'
+          import os, re, glob, unicodedata, urllib.parse
+
+          root      = "readme/docs/Documentation"
+          assets_dir = os.path.join(root, "assets")
+
+          def slugify_filename(name):
+              base, ext = os.path.splitext(name)
+              # Normalize unicode, strip zero-width / control chars.
+              base = unicodedata.normalize("NFKC", base)
+              base = "".join(ch for ch in base
+                              if unicodedata.category(ch)[0] != "C"   # control/format
+                              and ch not in "\u200b\u200c\u200d\ufeff")
+              # Lowercase, replace any run of non [a-z0-9] with a single hyphen.
+              base = base.lower()
+              base = re.sub(r'[^a-z0-9]+', '-', base).strip('-')
+              base = re.sub(r'-{2,}', '-', base) or "image"
+              ext  = ext.lower()
+              ext  = re.sub(r'[^a-z0-9.]', '', ext)
+              return base + ext
+
+          # 1) Rename files in assets/ (and any nested asset dirs), de-duplicating
+          #    slug collisions. Build old-basename -> new-basename map.
+          rename_map = {}   # old basename -> new basename
+          if os.path.isdir(assets_dir):
+              used = set()
+              for dirpath, _, filenames in os.walk(assets_dir):
+                  for fn in filenames:
+                      new = slugify_filename(fn)
+                      if new != fn or new in used:
+                          # ensure uniqueness within this dir
+                          stem, ext = os.path.splitext(new)
+                          cand = new; i = 1
+                          while cand in used or (cand != fn and os.path.exists(os.path.join(dirpath, cand))):
+                              i += 1; cand = f"{stem}-{i}{ext}"
+                          new = cand
+                          if new != fn:
+                              os.rename(os.path.join(dirpath, fn), os.path.join(dirpath, new))
+                      used.add(new)
+                      if new != fn:
+                          rename_map[fn] = new
+
+          # 2) Rewrite references across ALL markdown. The malformed refs contain
+          #    SPACES, so we must capture up to the closing delimiter (quote/paren),
+          #    not stop at whitespace. Handle three forms: HTML src="...", src='...',
+          #    and Markdown ](...). URL-decode the captured name, map old->new (or
+          #    sanitize if not in the rename map), then percent-encode the result.
+          def map_ref(raw_path):
+              # raw_path = the portion AFTER 'assets/' up to the closing delimiter.
+              decoded = urllib.parse.unquote(raw_path)
+              decoded = unicodedata.normalize("NFKC", decoded)
+              base = os.path.basename(decoded)
+              sub  = os.path.dirname(decoded)
+              new_base = rename_map.get(base) or slugify_filename(base)
+              new = (sub + "/" + new_base) if sub else new_base
+              return urllib.parse.quote(new)
+
+          def rewrite(text):
+              # HTML double-quoted: src="assets/...."
+              text = re.sub(r'(src=")(assets/[^"]+)(")',
+                            lambda m: m.group(1) + "assets/" + map_ref(m.group(2)[7:]) + m.group(3),
+                            text)
+              # HTML single-quoted: src='assets/....'
+              text = re.sub(r"(src=')(assets/[^']+)(')",
+                            lambda m: m.group(1) + "assets/" + map_ref(m.group(2)[7:]) + m.group(3),
+                            text)
+              # Markdown image/link: ](assets/....)
+              text = re.sub(r'(\]\()(assets/[^)]+)(\))',
+                            lambda m: m.group(1) + "assets/" + map_ref(m.group(2)[7:]) + m.group(3),
+                            text)
+              return text
+
+          changed = 0
+          for path in glob.glob(os.path.join(root, '**', '*.md'), recursive=True):
+              t = open(path, encoding="utf-8").read()
+              n = rewrite(t)
+              if n != t:
+                  open(path, "w", encoding="utf-8").write(n)
+                  changed += 1
+
+          print(f"Renamed {len(rename_map)} asset file(s); rewrote refs in {changed} page(s)")
+          if rename_map:
+              for o, n in list(rename_map.items())[:20]:
+                  print(f"  {o!r} -> {n!r}")
+          EOF
+
 
       - name: Relocate root README into getting-started as landing page (index)
         run: |
