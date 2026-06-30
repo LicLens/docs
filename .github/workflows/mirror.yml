@@ -458,9 +458,13 @@ jobs:
           EOF
 
       # ── FIX ─────────────────────────────────────────────────────────────────
-      # _order.yaml per folder, now leading on `index` (the folder landing page)
-      # then `welcome` (relocated root) then any remaining children in SUMMARY order.
-      - name: Generate _order.yaml files from SUMMARY.md
+      # Build a landing page for every folder, then write _order.yaml for every
+      # folder — in ONE step so stubbing and ordering stay consistent. Fixes:
+      #   * subfolder-only folders (e.g. `msp`) that had no index.md and vanished
+      #   * top-level folders (e.g. `reports`) missing from the root _order.yaml
+      # SUMMARY.md drives ORDER; the on-disk tree drives COMPLETENESS (any folder
+      # present on disk is included even if SUMMARY missed it).
+      - name: Ensure landing pages and generate _order.yaml for every folder
         run: |
           python3 - <<'EOF'
           import re, os, yaml
@@ -469,40 +473,82 @@ jobs:
           summary_path = "docs/SUMMARY.md"
           root         = "readme/docs/Documentation"
 
-          if not os.path.exists(summary_path):
-              print("No SUMMARY.md found, skipping _order.yaml generation")
-              raise SystemExit(0)
+          def humanize(s):
+              return re.sub(r'[-_]', ' ', s).strip().title() or "Overview"
 
+          def has_markdown_below(dirpath):
+              for _, _, files in os.walk(dirpath):
+                  if any(f.endswith(".md") for f in files):
+                      return True
+              return False
+
+          # 1) STUB: ensure every doc folder has an index.md (covers subfolder-only
+          #    folders like `msp` and any folder with no README/SUMMARY entry).
+          stubbed = 0
+          for dirpath, dirnames, filenames in os.walk(root):
+              if os.path.basename(dirpath) == "assets":
+                  dirnames[:] = []           # don't descend into assets
+                  continue
+              if "index.md" in filenames:
+                  continue
+              if not has_markdown_below(dirpath):
+                  continue
+              title = humanize(os.path.basename(dirpath)) if dirpath != root else "Overview"
+              stub = (f"---\ntitle: {title}\nexcerpt: ''\nsummary: ''\nhidden: false\n---\n\n"
+                      f"# {title}\n")
+              open(os.path.join(dirpath, "index.md"), "w", encoding="utf-8").write(stub)
+              stubbed += 1
+              print(f"  stub index.md -> {os.path.relpath(dirpath, root) or '(root)'}")
+          print(f"Stub index.md created in {stubbed} folder(s)")
+
+          # 2) ORDER from SUMMARY.md: parent rel-path ('' = root) -> ordered children.
           entry_re = re.compile(r'^(\s*)[\*\-]\s+\[.*?\]\((.*?)\)')
-          children = OrderedDict()   # parent rel-path ('' = root) -> ordered child names
+          children = OrderedDict()
 
           def register(parent, name):
               children.setdefault(parent, [])
               if name not in children[parent]:
                   children[parent].append(name)
 
-          for line in open(summary_path, encoding="utf-8"):
-              m = entry_re.match(line)
-              if not m:
-                  continue
-              rel = m.group(2).strip().lstrip("./")
-              if not rel.endswith(".md"):
-                  continue
-              # README.md leaves were renamed to index.md.
-              rel = re.sub(r'(^|/)README\.md$', lambda mm: f'{mm.group(1)}index.md', rel)
-              parts = rel.split("/")
-              for i in range(len(parts)):
-                  parent = "/".join(parts[:i])           # '' at root
-                  name   = parts[i]
-                  if name.endswith(".md"):
-                      name = name[:-3]                    # page slug
-                  register(parent, name)
+          if os.path.exists(summary_path):
+              for line in open(summary_path, encoding="utf-8"):
+                  m = entry_re.match(line)
+                  if not m:
+                      continue
+                  rel = m.group(2).strip().lstrip("./")
+                  if not rel.endswith(".md"):
+                      continue
+                  rel = re.sub(r'(^|/)README\.md$', lambda mm: f'{mm.group(1)}index.md', rel)
+                  parts = rel.split("/")
+                  for i in range(len(parts)):
+                      parent = "/".join(parts[:i])
+                      name   = parts[i]
+                      if name.endswith(".md"):
+                          name = name[:-3]
+                      register(parent, name)
 
-          written = 0
-          # Folder landing pages lead, in this priority: index (folder landing),
-          # then README/legacy. The root README is now the getting-started
-          # index.md itself, so there is no separate "welcome" page to lead with.
+          # 3) COMPLETENESS: append any on-disk folder/page SUMMARY didn't list, so
+          #    nothing is silently dropped from the nav. Walk the tree and register
+          #    each subfolder under its parent, and each non-index .md page too.
+          for dirpath, dirnames, filenames in os.walk(root):
+              if os.path.basename(dirpath) == "assets":
+                  dirnames[:] = []
+                  continue
+              parent_rel = os.path.relpath(dirpath, root).replace(os.sep, "/")
+              parent_rel = "" if parent_rel == "." else parent_rel
+              for d in sorted(dirnames):
+                  if d == "assets":
+                      continue
+                  if has_markdown_below(os.path.join(dirpath, d)):
+                      register(parent_rel, d)
+              for f in sorted(filenames):
+                  if f.endswith(".md") and f != "index.md":
+                      register(parent_rel, f[:-3])
+
+          # 4) WRITE _order.yaml for every folder. index leads, then README/legacy,
+          #    then remaining children that actually exist on disk.
           INDEX_NAMES = ["index", "README"]
+          written = 0
           for parent, kids in children.items():
               out_dir = os.path.join(root, parent) if parent else root
               if not os.path.isdir(out_dir):
@@ -520,39 +566,6 @@ jobs:
               print(f"  {parent or '(root)'}/_order.yaml -> {ordered}")
 
           print(f"_order.yaml written for {written} folder(s)")
-          EOF
-
-      # ── FIX ─────────────────────────────────────────────────────────────────
-      # Last-resort safety net: any folder that has .md content but STILL lacks an
-      # index.md after the README-relocate and first-document promotion (e.g. a
-      # folder with no SUMMARY.md entries at all) gets a minimal titled stub so
-      # ReadMe never 404s on the category landing page.
-      - name: Ensure every content folder has an index.md (fallback stub)
-        run: |
-          python3 - <<'EOF'
-          import os, re
-
-          root = "readme/docs/Documentation"
-
-          def humanize(s):
-              return re.sub(r'[-_]', ' ', s).strip().title() or "Overview"
-
-          created = 0
-          for dirpath, dirnames, filenames in os.walk(root):
-              mds = [f for f in filenames if f.endswith(".md")]
-              if not mds:
-                  continue
-              if "index.md" in filenames:
-                  continue
-              title = humanize(os.path.basename(dirpath)) if dirpath != root else "Overview"
-              stub = (f"---\ntitle: {title}\nexcerpt: ''\nsummary: ''\nhidden: false\n---\n\n"
-                      f"# {title}\n")
-              with open(os.path.join(dirpath, "index.md"), "w", encoding="utf-8") as f:
-                  f.write(stub)
-              created += 1
-              print(f"  stub index.md created in {os.path.relpath(dirpath, root) or '(root)'}")
-
-          print(f"Stub index.md created in {created} folder(s)")
           EOF
 
       - name: Purge .DS_Store from readme repo
