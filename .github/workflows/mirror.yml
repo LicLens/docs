@@ -32,6 +32,7 @@ jobs:
           rsync -av --delete \
             --exclude='.git' \
             --exclude='.github' \
+            --exclude='.DS_Store' \
             --exclude='SUMMARY.md' \
             docs/ readme/docs/Documentation/
 
@@ -50,7 +51,7 @@ jobs:
             -e 's#\./\.gitbook/assets#assets#g' \
             -e 's#\.gitbook/assets#assets#g'
 
-      - name: Relocate root README into getting-started
+      - name: Relocate root README into getting-started as welcome
         run: |
           python3 - <<'EOF'
           import os, re
@@ -78,9 +79,66 @@ jobs:
 
           dest_dir = os.path.join(root, "getting-started")
           os.makedirs(dest_dir, exist_ok=True)
-          open(os.path.join(dest_dir, "README.md"), "w", encoding="utf-8").write(text)
+          open(os.path.join(dest_dir, "welcome.md"), "w", encoding="utf-8").write(text)
           os.remove(src)
-          print("Relocated README.md -> getting-started/README.md (links re-relativized)")
+          print("Relocated README.md -> getting-started/welcome.md (renamed, links re-relativized)")
+          EOF
+
+      # ── FIX ─────────────────────────────────────────────────────────────────
+      # ReadMe requires:
+      #   (a) every folder to have an index.md  (folder landing page), and
+      #   (b) NO two pages sharing a slug.
+      # GitBook ships one README.md per folder, all of which slugify to "readme"
+      # and collide -> 404 / broken rendering. We convert each remaining
+      # README.md -> index.md and rewrite the links that pointed at it. The root
+      # README is already handled above, so only NESTED folder READMEs remain here.
+      - name: Convert nested folder README.md → index.md (folder landing pages)
+        run: |
+          python3 - <<'EOF'
+          import os, re, glob
+
+          root = "readme/docs/Documentation"
+
+          # 1) Find every nested README.md (root one is already gone -> welcome.md).
+          readmes = [p for p in glob.glob(os.path.join(root, '**', 'README.md'), recursive=True)]
+
+          renamed = []
+          for src in readmes:
+              dst = os.path.join(os.path.dirname(src), "index.md")
+              # Never clobber an index.md the author already provided.
+              if os.path.exists(dst):
+                  print(f"SKIP (index.md already exists): {os.path.relpath(dst, root)}")
+                  continue
+              os.rename(src, dst)
+              renamed.append(os.path.relpath(src, root).replace(os.sep, "/"))
+
+          # 2) Rewrite links across ALL pages that pointed at a renamed README,
+          #    e.g. [..](foo/README.md) or [..](./README.md) -> .../index.md.
+          #    Match README(.md) as a path component; preserve #anchors + titles.
+          link_re = re.compile(r'(\]\()([^)\s]+)((?:\s+"[^"]*")?\))')
+          def rewrite(text):
+              def fix(m):
+                  pre, target, post = m.group(1), m.group(2), m.group(3)
+                  if re.match(r'^[a-z][a-z0-9+.\-]*:', target, re.I) or target.startswith('#'):
+                      return m.group(0)
+                  path, sep, anchor = target.partition('#')
+                  # README or README.md as the final path component
+                  new = re.sub(r'(^|/)README(\.md)?$', lambda mm: f'{mm.group(1)}index{mm.group(2) or ""}', path)
+                  if new == path:
+                      return m.group(0)
+                  return f'{pre}{new}{sep}{anchor}{post}'
+              return link_re.sub(fix, text)
+
+          changed = 0
+          for path in glob.glob(os.path.join(root, '**', '*.md'), recursive=True):
+              raw = open(path, encoding="utf-8").read()
+              new = rewrite(raw)
+              if new != raw:
+                  open(path, "w", encoding="utf-8").write(new)
+                  changed += 1
+
+          print(f"Renamed {len(renamed)} README.md -> index.md: {renamed}")
+          print(f"Rewrote README links in {changed} page(s)")
           EOF
 
       - name: Convert GitBook content macros → ReadMe MDX (Callouts, etc.)
@@ -143,7 +201,14 @@ jobs:
           print(f"GitBook macros converted in {changed} page(s)")
           EOF
 
-      - name: Inject / merge ReadMe frontmatter (title / summary / hidden)
+      # ── FIX ─────────────────────────────────────────────────────────────────
+      # Inject/merge frontmatter AND guarantee a UNIQUE title per page. ReadMe
+      # derives slugs from titles, so two index.md files both titled (or auto-
+      # named) the same will collide. We make folder index pages inherit a title
+      # from SUMMARY.md / the folder name, and de-duplicate any clashes by
+      # appending the parent folder context (Yurii's "README for Security and
+      # Compliance" pattern, done automatically).
+      - name: Inject / merge ReadMe frontmatter (unique title / summary / hidden)
         run: |
           python3 - <<'EOF'
           import os, re, glob, yaml
@@ -160,13 +225,20 @@ jobs:
           # GitBook-only frontmatter keys ReadMe doesn't consume — drop to keep it clean.
           STRIP_KEYS    = {"cover", "coverY", "coverYAdjust", "icon", "layout"}
 
+          # SUMMARY.md links point at README.md / *.md; map BOTH the original path
+          # and its index.md-renamed equivalent to the human title in the link text.
           title_map = {}
           if os.path.exists(summary_path):
               link_re = re.compile(r'\[([^\]]+)\]\(([^)]+\.md)\)')
               for line in open(summary_path, encoding="utf-8"):
                   m = link_re.search(line)
                   if m:
-                      title_map[m.group(2).strip().lstrip("./")] = m.group(1).strip()
+                      rel = m.group(2).strip().lstrip("./")
+                      title = m.group(1).strip()
+                      title_map[rel] = title
+                      # README.md was renamed to index.md in an earlier step
+                      title_map[re.sub(r'(^|/)README\.md$',
+                                       lambda mm: f'{mm.group(1)}index.md', rel)] = title
 
           def split_frontmatter(raw):
               if raw.lstrip().startswith('---'):
@@ -193,18 +265,71 @@ jobs:
                   return (b[:147] + '...') if len(b) > 150 else b
               return ""
 
-          def humanize(p):
-              return re.sub(r'[-_]', ' ', os.path.splitext(os.path.basename(p))[0]).strip().title()
+          def humanize(s):
+              return re.sub(r'[-_]', ' ', s).strip().title()
 
-          changed = total = 0
+          def folder_title(rel):
+              # For an index page at <folder>/index.md, derive a title from the
+              # FOLDER name, not the literal word "index".
+              d = os.path.dirname(rel)
+              if d:
+                  return humanize(os.path.basename(d))
+              return "Overview"
+
+          # First pass: decide each page's title.
+          pages = []   # (path, rel, fm, body, title, is_index)
           for path in glob.glob(os.path.join(root, '**', '*.md'), recursive=True):
-              total += 1
               raw      = open(path, encoding="utf-8").read()
               fm, body = split_frontmatter(raw)
               rel      = os.path.relpath(path, root).replace(os.sep, '/')
+              is_index = os.path.basename(rel) == "index.md"
 
+              if is_index:
+                  # index pages: prefer explicit fm title, else SUMMARY title for the
+                  # folder, else the folder name. Avoid first_h1 alone (often generic).
+                  title = (fm.get("title")
+                           or title_map.get(rel)
+                           or folder_title(rel)
+                           or first_h1(body)
+                           or "Overview")
+              else:
+                  title = (fm.get("title")
+                           or title_map.get(rel)
+                           or first_h1(body)
+                           or humanize(os.path.splitext(os.path.basename(rel))[0]))
+              pages.append([path, rel, fm, body, title, is_index])
+
+          # Second pass: de-duplicate titles (ReadMe slug collisions). When two
+          # pages resolve to the same title, qualify with their parent folder.
+          seen = {}
+          for entry in pages:
+              t = entry[4]
+              seen.setdefault(t.lower(), []).append(entry)
+          for t_lower, group in seen.items():
+              if len(group) <= 1:
+                  continue
+              for entry in group:
+                  rel = entry[1]
+                  parent = os.path.basename(os.path.dirname(rel))
+                  if parent:
+                      entry[4] = f"{entry[4]} ({humanize(parent)})"
+
+          # Final safety net: if any collision survives (e.g. same title, same
+          # parent name in different trees), append a numeric suffix.
+          final_seen = {}
+          for entry in pages:
+              key = entry[4].lower()
+              if key in final_seen:
+                  final_seen[key] += 1
+                  entry[4] = f"{entry[4]} {final_seen[key]}"
+              else:
+                  final_seen[key] = 1
+
+          changed = total = 0
+          for path, rel, fm, body, title, is_index in pages:
+              total += 1
               new = {}
-              new["title"]       = fm.get("title") or title_map.get(rel) or first_h1(body) or humanize(path)
+              new["title"]       = title
               sub                = fm.get("excerpt") or fm.get("summary") or first_paragraph(body)
               new[EXCERPT_FIELD] = sub
               if MIRROR_SUMMARY:
@@ -212,15 +337,12 @@ jobs:
               new["hidden"]      = fm.get("hidden", False)
 
               # SEO description lives under metadata.description per ReadMe's schema.
-              # Fold any GitBook top-level `description` into the metadata block,
-              # preserving an existing metadata block (e.g. keywords).
               metadata = dict(fm.get("metadata") or {})
               if fm.get("description") and "description" not in metadata:
                   metadata["description"] = fm["description"]
               if metadata:
                   new["metadata"] = metadata
 
-              # carry over any other valid keys, minus GitBook-only + already-placed ones
               for k, v in fm.items():
                   if k in STRIP_KEYS or k in ("title", "excerpt", "summary",
                                               "hidden", "description", "metadata"):
@@ -231,6 +353,7 @@ jobs:
                      + yaml.dump(new, default_flow_style=False, allow_unicode=True,
                                  sort_keys=False, width=4096)
                      + "---\n\n" + body.lstrip("\n"))
+              raw = open(path, encoding="utf-8").read()
               if out != raw:
                   open(path, "w", encoding="utf-8").write(out)
                   changed += 1
@@ -239,6 +362,9 @@ jobs:
                 f"(field='{EXCERPT_FIELD}', mirror_summary={MIRROR_SUMMARY})")
           EOF
 
+      # ── FIX ─────────────────────────────────────────────────────────────────
+      # _order.yaml per folder, now leading on `index` (the folder landing page)
+      # then `welcome` (relocated root) then any remaining children in SUMMARY order.
       - name: Generate _order.yaml files from SUMMARY.md
         run: |
           python3 - <<'EOF'
@@ -252,8 +378,6 @@ jobs:
               print("No SUMMARY.md found, skipping _order.yaml generation")
               raise SystemExit(0)
 
-          # Build an ordered child list for every folder by walking each link's
-          # path components, so sub-category order (not just leaf pages) is captured.
           entry_re = re.compile(r'^(\s*)[\*\-]\s+\[.*?\]\((.*?)\)')
           children = OrderedDict()   # parent rel-path ('' = root) -> ordered child names
 
@@ -269,6 +393,8 @@ jobs:
               rel = m.group(2).strip().lstrip("./")
               if not rel.endswith(".md"):
                   continue
+              # README.md leaves were renamed to index.md.
+              rel = re.sub(r'(^|/)README\.md$', lambda mm: f'{mm.group(1)}index.md', rel)
               parts = rel.split("/")
               for i in range(len(parts)):
                   parent = "/".join(parts[:i])           # '' at root
@@ -278,14 +404,19 @@ jobs:
                   register(parent, name)
 
           written = 0
+          # Folder landing pages lead, in this priority: index (folder landing),
+          # then welcome (relocated root), then README/legacy.
+          INDEX_NAMES = ["index", "welcome", "README"]
           for parent, kids in children.items():
               out_dir = os.path.join(root, parent) if parent else root
               if not os.path.isdir(out_dir):
                   continue
-              # README (index page) leads its folder — incl. the root Welcome page.
-              has_readme = os.path.exists(os.path.join(out_dir, "README.md"))
-              ordered = (["README"] if has_readme else []) + \
-                        [k for k in kids if k != "README"]
+              leads = [n for n in INDEX_NAMES
+                       if os.path.exists(os.path.join(out_dir, n + ".md"))]
+              def exists(c):
+                  return (os.path.exists(os.path.join(out_dir, c + ".md"))
+                          or os.path.isdir(os.path.join(out_dir, c)))
+              ordered = leads + [k for k in kids if k not in leads and exists(k)]
               with open(os.path.join(out_dir, "_order.yaml"), "w", encoding="utf-8") as f:
                   yaml.dump(ordered, f, default_flow_style=False,
                             sort_keys=False, allow_unicode=True)
@@ -294,6 +425,46 @@ jobs:
 
           print(f"_order.yaml written for {written} folder(s)")
           EOF
+
+      # ── FIX ─────────────────────────────────────────────────────────────────
+      # Safety net: any folder that has .md content but STILL lacks an index.md
+      # (e.g. a folder GitBook never gave a README) gets a minimal stub so ReadMe
+      # never 404s on the category landing page.
+      - name: Ensure every content folder has an index.md
+        run: |
+          python3 - <<'EOF'
+          import os, re
+
+          root = "readme/docs/Documentation"
+
+          def humanize(s):
+              return re.sub(r'[-_]', ' ', s).strip().title() or "Overview"
+
+          created = 0
+          for dirpath, dirnames, filenames in os.walk(root):
+              mds = [f for f in filenames if f.endswith(".md")]
+              if not mds:
+                  continue
+              if "index.md" in filenames:
+                  continue
+              title = humanize(os.path.basename(dirpath)) if dirpath != root else "Overview"
+              stub = (f"---\ntitle: {title}\nexcerpt: ''\nsummary: ''\nhidden: false\n---\n\n"
+                      f"# {title}\n")
+              with open(os.path.join(dirpath, "index.md"), "w", encoding="utf-8") as f:
+                  f.write(stub)
+              created += 1
+              print(f"  stub index.md created in {os.path.relpath(dirpath, root) or '(root)'}")
+
+          print(f"Stub index.md created in {created} folder(s)")
+          EOF
+
+      - name: Purge .DS_Store from readme repo
+        run: |
+          cd readme
+          # Remove any .DS_Store (root or nested) from working tree AND git index,
+          # so already-committed ones (incl. the repo root) get cleaned on this run.
+          find . -path ./.git -prune -o -type f -name '.DS_Store' -print0 \
+            | xargs -0 -r git rm -f --quiet --ignore-unmatch
 
       - name: Commit and push to readme
         run: |
